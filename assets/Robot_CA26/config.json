@@ -1,0 +1,128 @@
+{
+  "name": "2026 FF2194",
+  "rotations": [
+    {
+      "axis": "x",
+      "degrees": 90.0
+    },
+    {
+      "axis": "y",
+      "degrees": 0.0
+    },
+    {
+      "axis": "z",
+      "degrees": 90.0
+    }
+  ],
+  "position": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "cameras": [
+    {
+      "name": "Front",
+      "fov": 57,
+      "resolution": [
+        1600,
+        1200
+      ],
+      "position": [
+        0.31,
+        0.0,
+        0.48
+      ],
+      "rotations": [
+        {
+          "axis": "x",
+          "degrees": 0
+        },
+        {
+          "axis": "y",
+          "degrees": -23
+        },
+        {
+          "axis": "z",
+          "degrees": 0
+        }
+      ]
+    },
+    {
+      "name": "Left",
+      "fov": 57,
+      "resolution": [
+        1600,
+        1200
+      ],
+      "position": [
+        0.232,
+        0.37,
+        0.45
+      ],
+      "rotations": [
+        {
+          "axis": "x",
+          "degrees": -2.5
+        },
+        {
+          "axis": "y",
+          "degrees": -28.7
+        },
+        {
+          "axis": "z",
+          "degrees": -90
+        }
+      ]
+    },
+    {
+      "name": "Right",
+      "fov": 57,
+      "resolution": [
+        1600,
+        1200
+      ],
+      "position": [
+        0.232,
+        -0.47,
+        0.45
+      ],
+      "rotations": [
+        {
+          "axis": "x",
+          "degrees": -2.2
+        },
+        {
+          "axis": "y",
+          "degrees": -28.9
+        },
+        {
+          "axis": "z",
+          "degrees": 90
+        }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": 90.0
+        },
+        {
+          "axis": "y",
+          "degrees": 0.0
+        },
+        {
+          "axis": "z",
+          "degrees": 90.0
+        }
+      ],
+      "zeroedPosition": [
+        0.205,
+        0.0,
+        -0.375
+      ]
+    }
+  ]
+}

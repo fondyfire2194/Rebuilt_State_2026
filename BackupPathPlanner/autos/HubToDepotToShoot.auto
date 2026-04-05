@@ -1,0 +1,81 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "USE_MT2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "HubToDepot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "START_INTAKE"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "INTAKE_ARM_DOWN"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "DepotToShoot"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "STOP_INTAKE"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "INTAKE_ARM_DOWN"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "START_SHOOTERS"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "SHOOT_COMMAND"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

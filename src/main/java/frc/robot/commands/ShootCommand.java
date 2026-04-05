@@ -1,0 +1,115 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot.commands;
+
+import dev.doglog.DogLog;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.FeederSetpoints;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.FeederBeltSubsystem;
+import frc.robot.subsystems.FeederRollerSubsystem;
+import frc.robot.subsystems.HoodSubsystem;
+import frc.robot.subsystems.TripleShooterSubsystem;
+
+/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
+public class ShootCommand extends Command {
+  /** Creates a new ShootCommand. */
+  private final TripleShooterSubsystem m_shooter;
+  private final HoodSubsystem m_hood;
+  private final FeederRollerSubsystem m_feederRoller;
+  private final FeederBeltSubsystem m_feederBelt;
+  private final CommandSwerveDrivetrain m_swerve;
+  private boolean m_bypassAlign;
+  private Timer beltTimer = new Timer();
+  private boolean okToShoot;
+  private boolean lookForPulse;
+
+  public ShootCommand(TripleShooterSubsystem shooter, HoodSubsystem hood, FeederRollerSubsystem feederRoller,
+      FeederBeltSubsystem feederBelt, CommandSwerveDrivetrain swerve, boolean bypassAlign) {
+    // Use addRequirements() here to declare subsystem dependencies.
+    m_shooter = shooter;
+    m_hood = hood;
+    m_feederRoller = feederRoller;
+    m_feederBelt = feederBelt;
+    m_swerve = swerve;
+    m_bypassAlign = bypassAlign;
+  }
+
+  // Called when the command is initially scheduled.
+  @Override
+  public void initialize() {
+    okToShoot = false;
+    beltTimer.start();
+    lookForPulse = false;
+  }
+
+  // Called every time the scheduler runs while the command is scheduled.
+  @Override
+  public void execute() {
+
+    m_shooter.runAllVelocityVoltage();
+
+    DogLog.log("Shoot/OKTOShoot", okToShoot);
+    DogLog.log("Shoot/ShootersAtSpeed", m_shooter.allVelocityInTolerance());
+    DogLog.log("Shoot/HoodAtTarget", m_hood.isPositionWithinTolerance());
+    DogLog.log("Shoot/Aligned", m_swerve.alignedToTarget);
+
+    m_shooter.bypassShootInterlocks = m_bypassAlign;
+
+    if ((m_shooter.allVelocityInTolerance()
+        && m_hood.isPositionWithinTolerance() && (m_swerve.alignedToTarget || m_shooter.bypassShootInterlocks))) {
+      okToShoot = true;
+    }
+
+    if (okToShoot) {
+
+      m_feederRoller.runFeederRollerAtVelocity();
+
+      if (Math.abs(m_feederRoller.feederRollerMotor.getEncoder().getVelocity()) > FeederSetpoints.rollerSpeedToStartBelt
+          || RobotBase.isSimulation())
+
+      {
+
+        // if (!lookForPulse && beltTimer.get() > m_feeder.beltInitialShootTime) {
+        // lookForPulse = true;
+        // beltTimer.reset();
+        // }
+
+        // if (lookForPulse && beltTimer.get() > m_feeder.beltStartPulseTime)
+        // m_feeder.pulse = true;
+
+        // if (lookForPulse && beltTimer.get() > m_feeder.beltStopPulseTime) {
+        // m_feeder.pulse = false;
+        // beltTimer.reset();
+        // }
+
+        m_feederBelt.pulse = false;// force no belt reverse pulse
+
+        if (!m_feederBelt.pulse)
+          m_feederBelt.runFeederBeltMotor(FeederSetpoints.kFeedBeltSetpoint);
+        else
+          m_feederBelt.pulseBelt();
+      }
+    }
+
+  }
+
+  // Called once the command ends or is interrupted.
+  @Override
+  public void end(boolean interrupted) {
+    m_feederBelt.stopFeederBeltMotor();
+    m_feederRoller.stopFeederRollerMotor();
+    okToShoot = false;
+
+  }
+
+  // Returns true when the command should end.
+  @Override
+  public boolean isFinished() {
+    return false;
+  }
+}
