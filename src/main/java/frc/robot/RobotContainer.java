@@ -16,7 +16,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.events.EventTrigger;
 
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -94,7 +93,8 @@ public class RobotContainer {
 
         private boolean logShooterData = true;
         private boolean logHoodData = true;
-        private boolean logFeederData = true;
+        private boolean logFeederBeltData = true;
+        private boolean logFeederRollerData = true;
         private boolean logIntakeData = true;
         private boolean logIntakeArmData = true;
         private boolean logLLData = true;
@@ -111,8 +111,8 @@ public class RobotContainer {
 
                 m_shooter = new TripleShooterSubsystem(logShooterData);
                 m_hood = new HoodSubsystem(logHoodData);
-                m_feederRoller = new FeederRollerSubsystem(logFeederData);
-                m_feederBelt = new FeederBeltSubsystem(logFeederData);
+                m_feederRoller = new FeederRollerSubsystem(logFeederRollerData);
+                m_feederBelt = new FeederBeltSubsystem(logFeederBeltData);
                 m_intake = new IntakeSubsystem(logIntakeData);
                 m_intakeArm = new Intake4BarArmSubsystem(logIntakeArmData);
                 m_llv = new LimelightVision(logLLData);
@@ -170,7 +170,8 @@ public class RobotContainer {
 
                 driver.leftTrigger().whileTrue(
                                 Commands.parallel(
-                                                new ShootCommand(m_shooter, m_hood,  m_feederRoller, m_feederBelt, drivetrain, 
+                                                new ShootCommand(m_shooter, m_hood, m_feederRoller, m_feederBelt,
+                                                                drivetrain,
                                                                 false),
                                                 Commands.sequence(Commands.waitSeconds(6),
                                                                 m_intakeArm.helpShootCommand(.5, Degrees.of(2)))));
@@ -420,8 +421,10 @@ public class RobotContainer {
                                                                 Commands.deadline(
                                                                                 Commands.waitSeconds(15),
                                                                                 new ShootCommand(m_shooter, m_hood,
-                                                                                                m_feederRoller, m_feederBelt, drivetrain,
-                                                                                                 true),
+                                                                                                m_feederRoller,
+                                                                                                m_feederBelt,
+                                                                                                drivetrain,
+                                                                                                true),
                                                                                 Commands.sequence(
                                                                                                 Commands.waitSeconds(5),
                                                                                                 m_intakeArm.helpShootCommand(

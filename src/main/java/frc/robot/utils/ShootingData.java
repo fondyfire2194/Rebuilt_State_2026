@@ -37,7 +37,7 @@ public class ShootingData {
     public static final double passingMinDistance = 0;
     public static final double passingMaxDistance = 12;
 
-    public static final double speedScalar=1.0;
+    public static final double speedScalar = 1.0;
 
     static {
 

@@ -27,6 +27,7 @@ public class ShootCommand extends Command {
   private Timer beltTimer = new Timer();
   private boolean okToShoot;
   private boolean lookForPulse;
+  private boolean okToRunBelt;
 
   public ShootCommand(TripleShooterSubsystem shooter, HoodSubsystem hood, FeederRollerSubsystem feederRoller,
       FeederBeltSubsystem feederBelt, CommandSwerveDrivetrain swerve, boolean bypassAlign) {
@@ -43,6 +44,7 @@ public class ShootCommand extends Command {
   @Override
   public void initialize() {
     okToShoot = false;
+    okToRunBelt = false;
     beltTimer.start();
     lookForPulse = false;
   }
@@ -53,12 +55,16 @@ public class ShootCommand extends Command {
 
     m_shooter.runAllVelocityVoltage();
 
-    DogLog.log("Shoot/OKTOShoot", okToShoot);
+    DogLog.log("Shoot/OKToShoot", okToShoot);
+    DogLog.log("Shoot/OKToRunBelt", okToRunBelt);
     DogLog.log("Shoot/ShootersAtSpeed", m_shooter.allVelocityInTolerance());
     DogLog.log("Shoot/HoodAtTarget", m_hood.isPositionWithinTolerance());
     DogLog.log("Shoot/Aligned", m_swerve.alignedToTarget);
 
     m_shooter.bypassShootInterlocks = m_bypassAlign;
+
+    if (!okToShoot)
+      m_feederBelt.runFeederBeltAtVelocity(FeederSetpoints.kBeltReverseRPM);
 
     if ((m_shooter.allVelocityInTolerance()
         && m_hood.isPositionWithinTolerance() && (m_swerve.alignedToTarget || m_shooter.bypassShootInterlocks))) {
@@ -71,8 +77,9 @@ public class ShootCommand extends Command {
 
       if (Math.abs(m_feederRoller.feederRollerMotor.getEncoder().getVelocity()) > FeederSetpoints.rollerSpeedToStartBelt
           || RobotBase.isSimulation())
+        okToRunBelt = true;
 
-      {
+      if (okToRunBelt) {
 
         if (!lookForPulse && beltTimer.get() > m_feederBelt.beltInitialShootTime) {
           lookForPulse = true;
@@ -87,7 +94,7 @@ public class ShootCommand extends Command {
           beltTimer.reset();
         }
 
-        // m_feederBelt.pulse = false;// force no belt reverse pulse
+         m_feederBelt.pulse = false;// force no belt reverse pulse
 
         if (!m_feederBelt.pulse)
           m_feederBelt.runFeederBeltAtVelocity();
