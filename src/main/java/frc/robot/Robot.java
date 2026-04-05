@@ -54,7 +54,8 @@ public class Robot extends TimedRobot {
                                                 .withLogEntryQueueCapacity(2000));
                 DogLog.setEnabled(true);
 
-                loopEvents = new LoopEvents(m_robotContainer.drivetrain, m_robotContainer.m_shooter, m_eventLoop);
+                loopEvents = new LoopEvents(m_robotContainer.drivetrain, m_robotContainer.m_shooter, null, null, null,
+                                null, null, m_eventLoop);
                 loopEvents.init();
 
                 autoHasRun = false;
@@ -112,7 +113,7 @@ public class Robot extends TimedRobot {
                 if (m_autonomousCommand != null) {
                         CommandScheduler.getInstance().schedule(m_autonomousCommand);
                 }
-        
+
         }
 
         @Override
@@ -170,7 +171,6 @@ public class Robot extends TimedRobot {
         public void simulationPeriodic() {
 
         }
-
 
         public Command runFrontMT2UpdatesCommand() {
                 return new LimelightTagsMT2Update(m_robotContainer.m_llv,

@@ -27,13 +27,13 @@ import frc.robot.Constants.IntakeSetpoints;
 
 public class IntakeSubsystem extends SubsystemBase {
   // Initialize intake SPARK. We will use open loop control for this.
-  private SparkMax intakeMotor = new SparkMax(Constants.CANIDConstants.intakeID, MotorType.kBrushless);
+  public SparkMax intakeMotor = new SparkMax(Constants.CANIDConstants.intakeID, MotorType.kBrushless);
   private SparkClosedLoopController intakeClosedLoopController;
   private double intakePowerSim;
   public boolean logData;
   private Timer faultCheckTimer;
 
-  private final Alert intakeAlert = new Alert(
+  public final Alert intakeAlert = new Alert(
       "Intake Fault",
       AlertType.kError);
   private final Alert intakeCanbusAlert = new Alert(

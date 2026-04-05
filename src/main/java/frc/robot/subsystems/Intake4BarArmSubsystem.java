@@ -35,8 +35,8 @@ import frc.robot.Constants.CANIDConstants;
 
 public class Intake4BarArmSubsystem extends SubsystemBase {
 
-  private final SparkMax intakeArmMotor = new SparkMax(CANIDConstants.intakeArmID, MotorType.kBrushless);
-  private final SparkMax intakeArmMotorFollower = new SparkMax(CANIDConstants.intakeArmFollowerID,
+  public final SparkMax intakeArmMotor = new SparkMax(CANIDConstants.intakeArmID, MotorType.kBrushless);
+  public final SparkMax intakeArmMotorFollower = new SparkMax(CANIDConstants.intakeArmFollowerID,
       MotorType.kBrushless);
 
   private static final double gearRatio = 57.38;
@@ -83,15 +83,9 @@ public class Intake4BarArmSubsystem extends SubsystemBase {
   public boolean logData;
   private boolean alternate;
 
-  private Timer faultCheckTimer;
-
-  private final Alert intakeArmAlert = new Alert(
+  public final Alert intakeArmAlert = new Alert(
       "Intake Arm Fault",
       AlertType.kError);
-  private final Alert intakeArmCanbusAlert = new Alert(
-      "Intake Arm Loss of Canbus",
-      AlertType.kError);
-  private double faultCheckTime = 5.2;
 
   public Intake4BarArmSubsystem(boolean logData) {
 
@@ -120,9 +114,6 @@ public class Intake4BarArmSubsystem extends SubsystemBase {
 
     this.logData = logData;
 
-    faultCheckTimer = new Timer();
-    faultCheckTimer.start();
-
     intakeArmMotor.getEncoder().setPosition(homeAngle.in(Radians));
 
     kp = DogLog.tunable("IntakeArm/PGain", 8., newKp -> m_controller.setP(newKp));
@@ -147,35 +138,26 @@ public class Intake4BarArmSubsystem extends SubsystemBase {
 
   public void periodic() {
 
-    if (faultCheckTimer.get() > faultCheckTime) {
-      intakeArmAlert.set(intakeArmMotor.hasActiveFault() || intakeArmMotor.hasStickyFault());
-      intakeArmCanbusAlert.set(checkIntakeArmCanFault());
-      faultCheckTimer.restart();
-    }
+    if (logData)
 
-    else {
-
-      if (logData)
-
-      {
-        if (alternate) {
-          DogLog.log("IntakeArm/TargetAngle", Units.radiansToDegrees(m_controller.getGoal().position));
-          DogLog.log("IntakeArm/CurrentAngle", getIntakeArmAngle().in(Degrees));
-          DogLog.log("IntakeArm/Encoder", intakeArmMotor.getEncoder().getPosition());
-          DogLog.log("IntakeArm/EncoderVel", intakeArmMotor.getEncoder().getVelocity());
-          DogLog.log("IntakeArm/MotorVolts", intakeArmMotor.getAppliedOutput() * RobotController.getBatteryVoltage());
-          DogLog.log("IntakeArm/FwdSoftLimit", intakeArmMotor.getForwardSoftLimit().isReached());
-          DogLog.log("IntakeArm/RevSoftLimit", intakeArmMotor.getReverseSoftLimit().isReached());
-        } else {
-          DogLog.log("IntakeArm/FollowerEncoder", intakeArmMotorFollower.getEncoder().getPosition());
-          DogLog.log("IntakeArm/AngleError", m_controller.getPositionError());
-          DogLog.log("IntakeArm/AtTarget", m_controller.atGoal());
-          DogLog.log("IntakeArm/LeaderAmps", intakeArmMotor.getOutputCurrent());
-          DogLog.log("IntakeArm/FollowerAmps", intakeArmMotorFollower.getOutputCurrent());
-        }
-
-        alternate = !alternate;
+    {
+      if (alternate) {
+        DogLog.log("IntakeArm/TargetAngle", Units.radiansToDegrees(m_controller.getGoal().position));
+        DogLog.log("IntakeArm/CurrentAngle", getIntakeArmAngle().in(Degrees));
+        DogLog.log("IntakeArm/Encoder", intakeArmMotor.getEncoder().getPosition());
+        DogLog.log("IntakeArm/EncoderVel", intakeArmMotor.getEncoder().getVelocity());
+        DogLog.log("IntakeArm/MotorVolts", intakeArmMotor.getAppliedOutput() * RobotController.getBatteryVoltage());
+        DogLog.log("IntakeArm/FwdSoftLimit", intakeArmMotor.getForwardSoftLimit().isReached());
+        DogLog.log("IntakeArm/RevSoftLimit", intakeArmMotor.getReverseSoftLimit().isReached());
+      } else {
+        DogLog.log("IntakeArm/FollowerEncoder", intakeArmMotorFollower.getEncoder().getPosition());
+        DogLog.log("IntakeArm/AngleError", m_controller.getPositionError());
+        DogLog.log("IntakeArm/AtTarget", m_controller.atGoal());
+        DogLog.log("IntakeArm/LeaderAmps", intakeArmMotor.getOutputCurrent());
+        DogLog.log("IntakeArm/FollowerAmps", intakeArmMotorFollower.getOutputCurrent());
       }
+
+      alternate = !alternate;
     }
   }
 
@@ -285,7 +267,6 @@ public class Intake4BarArmSubsystem extends SubsystemBase {
     return stallDebouncer.calculate(stalled);
   }
 
-  
   public Command clearIntakeArmStickyFaultsCommand() {
     return Commands.runOnce(() -> intakeArmMotor.clearFaults());
   }

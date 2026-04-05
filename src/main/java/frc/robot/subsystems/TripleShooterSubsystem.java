@@ -60,9 +60,6 @@ public class TripleShooterSubsystem extends SubsystemBase {
 
   private boolean logData;
 
-  private Timer faultCheckTimer;
-  private double faultCheckTime = 5.3;
-
   private boolean endShoot;
 
   public boolean isEndShoot() {
@@ -81,7 +78,7 @@ public class TripleShooterSubsystem extends SubsystemBase {
     return Commands.runOnce(this::setEndShoot);
   }
 
-  private final Alert shooterAlert = new Alert(
+  public final Alert shooterAlert = new Alert(
       "Shooter Fault",
       AlertType.kError);
 
@@ -182,8 +179,6 @@ public class TripleShooterSubsystem extends SubsystemBase {
       DogLog.log("Shooter/Right Shooter", "Could not apply configs, error code: " + statusR.toString());
     }
 
-    faultCheckTimer = new Timer();
-    faultCheckTimer.start();
   }
 
   public void runVelocityVoltage(TalonFX motor) {
@@ -333,64 +328,56 @@ public class TripleShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-    if (faultCheckTimer.get() > faultCheckTime) {
-      shooterAlert.set(leftMotor.getFaultField().asSupplier().get() != 0
-          || middleMotor.getFaultField().asSupplier().get() != 0
-          || rightMotor.getFaultField().asSupplier().get() != 0);
-      faultCheckTimer.restart();
 
-    } else {
-      if (logData) {
-        logStep++;
+    if (logData) {
+      logStep++;
 
-        switch (logStep) {
-          case 0:
-            DogLog.log("Shooter/LeftRPM", leftMotor.getVelocity().getValue().in(RPM));
-            DogLog.log("Shooter/MiddleRPM", middleMotor.getVelocity().getValue().in(RPM));
-            DogLog.log("Shooter/RightRPM", rightMotor.getVelocity().getValue().in(RPM));
-            break;
+      switch (logStep) {
+        case 0:
+          DogLog.log("Shooter/LeftRPM", leftMotor.getVelocity().getValue().in(RPM));
+          DogLog.log("Shooter/MiddleRPM", middleMotor.getVelocity().getValue().in(RPM));
+          DogLog.log("Shooter/RightRPM", rightMotor.getVelocity().getValue().in(RPM));
+          break;
 
-          case 1:
-            DogLog.log("Shooter/LeftAmps", leftMotor.getStatorCurrent().getValue().in(Amps));
-            DogLog.log("Shooter/MiddleAmps", middleMotor.getStatorCurrent().getValue().in(Amps));
-            DogLog.log("Shooter/RightAmps", rightMotor.getStatorCurrent().getValue().in(Amps));
-            break;
+        case 1:
+          DogLog.log("Shooter/LeftAmps", leftMotor.getStatorCurrent().getValue().in(Amps));
+          DogLog.log("Shooter/MiddleAmps", middleMotor.getStatorCurrent().getValue().in(Amps));
+          DogLog.log("Shooter/RightAmps", rightMotor.getStatorCurrent().getValue().in(Amps));
+          break;
 
-          case 2:
-            DogLog.log("Shooter/LeftVolts", leftMotor.getMotorVoltage().getValue().in(Volts));
-            DogLog.log("Shooter/MiddleVolts", middleMotor.getMotorVoltage().getValue().in(Volts));
-            DogLog.log("Shooter/RightVolts", rightMotor.getMotorVoltage().getValue().in(Volts));
-            break;
+        case 2:
+          DogLog.log("Shooter/LeftVolts", leftMotor.getMotorVoltage().getValue().in(Volts));
+          DogLog.log("Shooter/MiddleVolts", middleMotor.getMotorVoltage().getValue().in(Volts));
+          DogLog.log("Shooter/RightVolts", rightMotor.getMotorVoltage().getValue().in(Volts));
+          break;
 
-          case 3:
-            DogLog.log("Shooter/LeftMotorAtSpeed", isVelocityWithinTolerance(leftMotor));
-            DogLog.log("Shooter/MiddleMotorAtSpeed", isVelocityWithinTolerance(middleMotor));
-            DogLog.log("Shooter/RightMotorAtSpeed", isVelocityWithinTolerance(rightMotor));
-            DogLog.log("Shooter/AllMotorsAtSpeed", allVelocityInTolerance());
-            break;
+        case 3:
+          DogLog.log("Shooter/LeftMotorAtSpeed", isVelocityWithinTolerance(leftMotor));
+          DogLog.log("Shooter/MiddleMotorAtSpeed", isVelocityWithinTolerance(middleMotor));
+          DogLog.log("Shooter/RightMotorAtSpeed", isVelocityWithinTolerance(rightMotor));
+          DogLog.log("Shooter/AllMotorsAtSpeed", allVelocityInTolerance());
+          break;
 
-          case 4:
-            DogLog.log("Shooter/UseDistForRPM", isShootUsingDistance());
-            DogLog.log("Shooter/FinalTargetRPM", finalSetTargetRPM);
-            DogLog.log("Shooter/AutoTargetRPM", autoSetTargetRPM);
-            DogLog.log("Shooter/ManualTargetRPM", manualSetTargetRPM);
-            break;
+        case 4:
+          DogLog.log("Shooter/UseDistForRPM", isShootUsingDistance());
+          DogLog.log("Shooter/FinalTargetRPM", finalSetTargetRPM);
+          DogLog.log("Shooter/AutoTargetRPM", autoSetTargetRPM);
+          DogLog.log("Shooter/ManualTargetRPM", manualSetTargetRPM);
+          break;
 
-          case 5:
-            logStep = -1;
-            break;
+        case 5:
+          logStep = -1;
+          break;
 
-          case 6:
-            logStep = -1;
-            break;
+        case 6:
+          logStep = -1;
+          break;
 
-          default:
-            logStep = -1;
-            break;
-        }
-
+        default:
+          logStep = -1;
+          break;
       }
+
     }
 
   }

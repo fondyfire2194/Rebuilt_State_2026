@@ -17,7 +17,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -64,17 +63,11 @@ public class HoodSubsystem extends SubsystemBase {
         return finalTargetAngle;
     }
 
-    private final Alert hoodAlert = new Alert(
+    public final Alert hoodAlert = new Alert(
             "Hood Fault",
             AlertType.kError);
 
-    private final Alert hoodCanbusAlert = new Alert(
-            "Hood Loss of Canbus",
-            AlertType.kError);
-
-    private Timer faultCheckTimer;
-    private double faultCheckTime = 5.3;
-    private final SparkMax hoodMotor;
+    public final SparkMax hoodMotor;
 
     private final static double gearRatio = 139;
 
@@ -143,10 +136,6 @@ public class HoodSubsystem extends SubsystemBase {
 
         this.logData = logData;
 
-        faultCheckTimer = new Timer();
-        faultCheckTimer.start();
-
-        hoodAlert.set(hoodMotor.hasActiveFault() || hoodMotor.hasStickyFault());
     }
 
     public Command setHoodZeroCommand() {
@@ -249,31 +238,22 @@ public class HoodSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
 
-        if (faultCheckTimer.get() > faultCheckTime) {
-            hoodAlert.set(hoodMotor.hasActiveFault() || hoodMotor.hasStickyFault());
-            hoodCanbusAlert.set(checkHoodCanFault());
-            faultCheckTimer.restart();
-        }
+        if (logData) {
+            if (alternate) {
+                DogLog.log("Hood/CurrentAngle", getHoodAngle());
+                DogLog.log("Hood/FinalTargetAngle", finalTargetAngle);
+                DogLog.log("Hood/ManualTargetAngle", manualTargetAngle);
+                DogLog.log("Hood/AutoTargetAngle", autoTargetAngle);
+                DogLog.log("Hood/UseAutoTarget", isHoodUsingDistance());
+            } else {
 
-        else {
-
-            if (logData) {
-                if (alternate) {
-                    DogLog.log("Hood/CurrentAngle", getHoodAngle());
-                    DogLog.log("Hood/FinalTargetAngle", finalTargetAngle);
-                    DogLog.log("Hood/ManualTargetAngle", manualTargetAngle);
-                    DogLog.log("Hood/AutoTargetAngle", autoTargetAngle);
-                    DogLog.log("Hood/UseAutoTarget", isHoodUsingDistance());
-                } else {
-
-                    DogLog.log("Hood/AngleError", finalTargetAngle - getHoodAngle());
-                    DogLog.log("Hood/AtTarget", isPositionWithinTolerance());
-                    DogLog.log("Hood/FwdSoftLimit", hoodMotor.getForwardSoftLimit().isReached());
-                    DogLog.log("Hood/RevSoftLimit", hoodMotor.getReverseSoftLimit().isReached());
-                }
-                alternate = !alternate;
+                DogLog.log("Hood/AngleError", finalTargetAngle - getHoodAngle());
+                DogLog.log("Hood/AtTarget", isPositionWithinTolerance());
+                DogLog.log("Hood/FwdSoftLimit", hoodMotor.getForwardSoftLimit().isReached());
+                DogLog.log("Hood/RevSoftLimit", hoodMotor.getReverseSoftLimit().isReached());
             }
+            alternate = !alternate;
         }
-
     }
+
 }

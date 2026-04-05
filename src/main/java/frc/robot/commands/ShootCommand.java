@@ -74,25 +74,25 @@ public class ShootCommand extends Command {
 
       {
 
-        // if (!lookForPulse && beltTimer.get() > m_feeder.beltInitialShootTime) {
-        // lookForPulse = true;
-        // beltTimer.reset();
-        // }
+        if (!lookForPulse && beltTimer.get() > m_feederBelt.beltInitialShootTime) {
+          lookForPulse = true;
+          beltTimer.reset();
+        }
 
-        // if (lookForPulse && beltTimer.get() > m_feeder.beltStartPulseTime)
-        // m_feeder.pulse = true;
+        if (lookForPulse && beltTimer.get() > m_feederBelt.beltStartPulseTime)
+          m_feederBelt.pulse = true;
 
-        // if (lookForPulse && beltTimer.get() > m_feeder.beltStopPulseTime) {
-        // m_feeder.pulse = false;
-        // beltTimer.reset();
-        // }
+        if (lookForPulse && beltTimer.get() > m_feederBelt.beltStopPulseTime) {
+          m_feederBelt.pulse = false;
+          beltTimer.reset();
+        }
 
-        m_feederBelt.pulse = false;// force no belt reverse pulse
+        // m_feederBelt.pulse = false;// force no belt reverse pulse
 
         if (!m_feederBelt.pulse)
-          m_feederBelt.runFeederBeltMotor(FeederSetpoints.kFeedBeltSetpoint);
+          m_feederBelt.runFeederBeltAtVelocity();
         else
-          m_feederBelt.pulseBelt();
+          m_feederBelt.runFeederBeltAtVelocity(FeederSetpoints.kBeltReverseRPM);
       }
     }
 

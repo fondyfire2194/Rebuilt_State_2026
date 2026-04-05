@@ -38,7 +38,7 @@ public class FeederRollerSubsystem extends SubsystemBase {
 
   private boolean showData;
 
-  private final Alert feederAlert = new Alert(
+  public final Alert feederRollerAlert = new Alert(
       "Feeder Fault",
       AlertType.kError);
 
@@ -64,8 +64,6 @@ public class FeederRollerSubsystem extends SubsystemBase {
 
 
     this.showData = showData;
-
-    feederAlert.set(feederRollerMotor.hasActiveFault() || feederRollerMotor.hasStickyFault());
   }
 
   @Override

@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -36,8 +35,8 @@ public class FeederBeltSubsystem extends SubsystemBase {
 
   private boolean showData;
 
-  private final Alert feederAlert = new Alert(
-      "Feeder Fault",
+  public final Alert feederBeltAlert = new Alert(
+      "Feeder Belt Fault",
       AlertType.kError);
 
   public boolean pulse;
@@ -70,10 +69,7 @@ public class FeederBeltSubsystem extends SubsystemBase {
     closedLoopController = feederBeltMotor.getClosedLoopController();
 
     this.showData = showData;
-    if (showData)
-      SmartDashboard.putData(this);
 
-    feederAlert.set(feederBeltMotor.hasActiveFault() || feederBeltMotor.hasStickyFault());
   }
 
   @Override
@@ -94,7 +90,9 @@ public class FeederBeltSubsystem extends SubsystemBase {
 
   public void runFeederBeltAtVelocity(double rpm) {
     closedLoopController.setSetpoint(rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-  } public void runFeederBeltAtVelocity() {
+  }
+
+  public void runFeederBeltAtVelocity() {
     closedLoopController.setSetpoint(FeederSetpoints.kBeltShootRPM, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
   }
 
@@ -155,10 +153,6 @@ public class FeederBeltSubsystem extends SubsystemBase {
 
   public Command clearFeederBeltStickyFaultsCommand() {
     return Commands.runOnce(() -> feederBeltMotor.clearFaults());
-  }
-
-  public void pulseBelt() {
-    runFeederBeltMotor(-.25);
   }
 
 }
