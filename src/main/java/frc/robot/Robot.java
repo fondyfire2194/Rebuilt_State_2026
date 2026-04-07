@@ -54,8 +54,9 @@ public class Robot extends TimedRobot {
                                                 .withLogEntryQueueCapacity(2000));
                 DogLog.setEnabled(true);
 
-                loopEvents = new LoopEvents(m_robotContainer.drivetrain, m_robotContainer.m_shooter, null, null, null,
-                                null, null, m_eventLoop);
+                loopEvents = new LoopEvents(m_robotContainer.drivetrain, m_robotContainer.m_shooter,
+                                m_robotContainer.m_feederBelt, m_robotContainer.m_feederRoller, m_robotContainer.m_hood,
+                                m_robotContainer.m_intake, m_robotContainer.m_intakeArm, m_eventLoop);
                 loopEvents.init();
 
                 autoHasRun = false;

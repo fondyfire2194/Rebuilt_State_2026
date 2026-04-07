@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -43,6 +42,7 @@ public class FeederRollerSubsystem extends SubsystemBase {
       AlertType.kError);
 
   public boolean pulse;
+
   public FeederRollerSubsystem(boolean showData) {
     feederRollerMotor = new SparkMax(Constants.CANIDConstants.feederRollerID, MotorType.kBrushless);
     /*
@@ -62,7 +62,6 @@ public class FeederRollerSubsystem extends SubsystemBase {
 
     closedLoopController = feederRollerMotor.getClosedLoopController();
 
-
     this.showData = showData;
   }
 
@@ -75,7 +74,6 @@ public class FeederRollerSubsystem extends SubsystemBase {
     DogLog.log("Feeder/RollerAmps", feederRollerMotor.getOutputCurrent());
     DogLog.log("Feeder/RollerVolts", feederRollerMotor.getAppliedOutput() * RobotController.getBatteryVoltage());
 
-   
   }
 
   public void runFeederRollerMotor(double power) {
@@ -85,6 +83,10 @@ public class FeederRollerSubsystem extends SubsystemBase {
 
   public void runFeederRollerAtVelocity() {
     closedLoopController.setSetpoint(FeederSetpoints.kRollerShootRPM, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+  }
+
+  public void runFeederRollerAtVelocity(double rpm) {
+    closedLoopController.setSetpoint(rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
   }
 
   public void stopFeederRollerMotor() {
@@ -144,10 +146,8 @@ public class FeederRollerSubsystem extends SubsystemBase {
     return Math.abs(getFeederRollerAppliedOutput()) > .1;
   }
 
-   public Command clearFeederRollerStickyFaultsCommand() {
+  public Command clearFeederRollerStickyFaultsCommand() {
     return Commands.runOnce(() -> feederRollerMotor.clearFaults());
   }
 
-
-  
 }

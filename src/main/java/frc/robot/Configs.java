@@ -158,7 +158,14 @@ public final class Configs {
           .p(0.0001)
           .i(0)
           .d(0)
-          .outputRange(-1, 1);
+          .outputRange(-1, 1)
+          // Set PID values for velocity control in slot 1
+          .p(0.05, ClosedLoopSlot.kSlot1)
+          .i(0, ClosedLoopSlot.kSlot1)
+          .d(0, ClosedLoopSlot.kSlot1)
+          .outputRange(-1, 1, ClosedLoopSlot.kSlot1).feedForward
+          // kV is now in Volts, so we multiply by the nominal voltage (12V)
+          .kV(12.0 / 5767, ClosedLoopSlot.kSlot1);
 
       feederBeltConfig.closedLoop.feedForward
           // kV is now in Volts, so we multiply by the nominal voltage (12V)
@@ -167,7 +174,7 @@ public final class Configs {
     }
 
     public static final SparkMaxConfig feederRollerConfig = new SparkMaxConfig();
-    static { // Configure basic setting of the feeder belt motor
+    static { // Configure basic setting of the feeder roller motor
       feederRollerConfig
           .inverted(false)
           .idleMode(IdleMode.kCoast)

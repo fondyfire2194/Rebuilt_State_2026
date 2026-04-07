@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.function.DoubleSupplier;
+
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -25,7 +27,28 @@ import frc.robot.Constants;
 import frc.robot.Constants.FeederSetpoints;
 
 public class FeederBeltSubsystem extends SubsystemBase {
-  /** Creates a new FeederSubsystem. */
+  /**
+   * Creates a new FeederSubsystem.
+   * Fuel travels from belt to belt roller to roller rollers to shooter roller
+   * 
+   * Feeder belt has a 3:1 reduction from a Neo motor and has 2 inch dia rollers
+   * Feeder roller is 1:1 from a Neo motor and has 2 in dia rollers
+   * Shooter is 1:1 from Kraken X60 and has a 4" diameter roller
+   * 
+   * Shooter speed typical is around 3000 rpm - 50 revs per second so 50 * PI * 4
+   * or 200 PI inches per second
+   * For rollers to provide 50% of that, 50 * PI * 2, rollers need to run same
+   * speed as shooter or 3000 rpm
+   * For belt to provide 50% of rollers, need 25 * PI * 2 or 1500 rpm but with 3:1
+   * reduction means 4500 motor rpm
+   * Belt 3600 rpm gives belt roller 1200 rpm so 20 * PI * 2 or 40 * PI inches per
+   * second or 20% shooter speed
+   * Belt moves 4 inches per roller rev = 20 * 4 or 80 inches per second
+   * 
+   * Speeds = 80(belt) to 120 to 314 to 628 inches per second
+   * 
+   * 
+   */
 
   public SparkMax feederBeltMotor;
 
@@ -48,6 +71,8 @@ public class FeederBeltSubsystem extends SubsystemBase {
 
   public double beltInitialShootTime = 5.;
 
+  private double positionTolerance = .1;
+
   public FeederBeltSubsystem(boolean showData) {
     feederBeltMotor = new SparkMax(Constants.CANIDConstants.feederBeltID, MotorType.kBrushless);
     /*
@@ -68,7 +93,11 @@ public class FeederBeltSubsystem extends SubsystemBase {
 
     closedLoopController = feederBeltMotor.getClosedLoopController();
 
+    feederBeltMotor.clearFaults();
+
     this.showData = showData;
+
+    feederBeltMotor.getEncoder().setPosition(0);
 
   }
 
@@ -76,6 +105,10 @@ public class FeederBeltSubsystem extends SubsystemBase {
   public void periodic() {
 
     DogLog.log("Feeder/BeltRPM", feederBeltMotor.getEncoder().getVelocity());
+    DogLog.log("Feeder/BeltPosition", feederBeltMotor.getEncoder().getPosition());
+    DogLog.log("Feeder/BeltControllerAtSetpoint", closedLoopController.isAtSetpoint());
+    DogLog.log("Feeder/BeltInPosition", atPositionSetpoint());
+
     DogLog.log("Feeder/BeltAmps", feederBeltMotor.getOutputCurrent());
     DogLog.log("Feeder/BeltVolts", feederBeltMotor.getAppliedOutput() * RobotController.getBatteryVoltage());
 
@@ -96,6 +129,27 @@ public class FeederBeltSubsystem extends SubsystemBase {
     closedLoopController.setSetpoint(FeederSetpoints.kBeltShootRPM, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
   }
 
+  public Command unstickFuelCommand(double rate1, double rate2, double moveTime, double dwell) {
+    return Commands.sequence(
+        jogFeederBeltCommand(() -> rate1).withTimeout(moveTime),
+        Commands.waitSeconds(dwell),
+        jogFeederBeltCommand(() -> rate2).withTimeout(moveTime),
+        Commands.waitSeconds(dwell))
+        .repeatedly()
+        .andThen(jogFeederBeltCommand(() -> 0).withTimeout(.1));
+
+    // .andThen(stopFeederBeltCommand());
+  }
+
+  public double getBeltPosition() {
+    return feederBeltMotor.getEncoder().getPosition();
+  }
+
+  public boolean atPositionSetpoint() {
+    return Math
+        .abs(closedLoopController.getSetpoint() - feederBeltMotor.getEncoder().getPosition()) < positionTolerance;
+  }
+
   public void stopFeederBeltMotor() {
     feederBeltMotor.set(0);
     feederBeltPowerSim = 0;
@@ -114,26 +168,13 @@ public class FeederBeltSubsystem extends SubsystemBase {
    * interrupted, e.g. the button is released,
    * the motors will stop.
    */
-  public Command jogFeederBeltCommand() {
+  public Command jogFeederBeltCommand(DoubleSupplier rate) {
     return this.startEnd(
         () -> {
-          this.runFeederBeltMotor(Constants.FeederSetpoints.kFeedBeltJogSetpoint);
+          this.runFeederBeltMotor(rate.getAsDouble());
         }, () -> {
           this.runFeederBeltMotor(0.0);
         }).withName("JogFeederBelt");
-  }
-
-  /**
-   * Command to reverse the feeder belt motor. When the command is
-   * interrupted, e.g. the button is released, the motors will stop.
-   */
-  public Command jogReverseFeederBeltCommand() {
-    return this.startEnd(
-        () -> {
-          this.runFeederBeltMotor(-Constants.FeederSetpoints.kFeedBeltSetpoint);
-        }, () -> {
-          this.runFeederBeltMotor(0.0);
-        }).withName("FeederBeltReversing");
   }
 
   public double getFeederBeltAppliedOutput() {

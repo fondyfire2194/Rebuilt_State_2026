@@ -80,8 +80,8 @@ public class RobotContainer {
 
         final HoodSubsystem m_hood;
 
-        private final FeederRollerSubsystem m_feederRoller;
-        private final FeederBeltSubsystem m_feederBelt;
+        final FeederRollerSubsystem m_feederRoller;
+        final FeederBeltSubsystem m_feederBelt;
 
         final IntakeSubsystem m_intake;
 
@@ -179,7 +179,8 @@ public class RobotContainer {
                 driver.rightTrigger().whileTrue(
                                 Commands.parallel(
                                                 m_intakeArm.intakeArmToIntakeAngleCommand(),
-                                                m_intake.runIntakeAtVelocityCommand()))
+                                                m_intake.runIntakeAtVelocityCommand(),
+                                                unstickFuelCommand()))
                                 .onFalse(
                                                 m_intake.stopIntakeCommand());
 
@@ -209,14 +210,13 @@ public class RobotContainer {
                 driver.povDown().onTrue(m_shooter.changeFinalTargetVelocityCommand(-100));
 
                 driver.povLeft().onTrue(Commands.none());
-                // new DeferredCommand(() -> Commands.either(
-                // Commands.parallel(m_shooter.setShootUsingDistanceCommand(false),
-                // m_hood.setHoodUsingDistanceCommand(false)),
-                // Commands.parallel(m_shooter.setShootUsingDistanceCommand(true),
-                // m_hood.setHoodUsingDistanceCommand(false)),
-                // () -> m_shooter.isShootUsingDistance()), Set.of()));
-
-                driver.povRight().onTrue(Commands.none());
+               
+                driver.povRight().whileTrue(
+                                Commands.deadline(
+                                                m_feederBelt.unstickFuelCommand(
+                                                         -.25, -.25, .25, .1),
+                                                Commands.run(() -> m_feederRoller.runFeederRollerAtVelocity(-200)))
+                                                .andThen(m_feederRoller.stopFeederRollerCommand()));
 
                 driver.back().onTrue(Commands.runOnce(() -> drivetrain.getPigeon2().reset()));
 
@@ -238,24 +238,31 @@ public class RobotContainer {
                 // SignalLogger.stop()));
 
                 codriver.leftBumper()
-                                .whileTrue(m_intakeArm.jogIntakeArmCommand(() -> codriver.getLeftX() / 4));
+                                // .whileTrue(m_intakeArm.jogIntakeArmCommand(() -> codriver.getLeftX() / 4));
+                                .onTrue(Commands.deadline(
+                                                m_feederBelt.unstickFuelCommand(
+                                                                -.25, -.25, .25, .1),
 
-                codriver.rightBumper().and(codriver.y()).onTrue(m_intakeArm.intakeArmToClearAngleCommand());
+                                                Commands.run(() -> m_feederRoller.runFeederRollerAtVelocity(-100)))
+                                                .andThen(m_feederRoller.stopFeederRollerCommand()));
 
-                codriver.rightBumper().and(codriver.a()).onTrue(m_intakeArm.intakeArmToIntakeAngleCommand());
+                codriver.rightBumper().whileTrue(m_feederRoller.jogReverseFeederRollerCommand());
 
-                codriver.rightBumper().and(codriver.b()).onTrue(m_intakeArm.intakeArmToMidUpAngleCommand());
+                // codriver.rightBumper().and(codriver.a()).onTrue(m_intakeArm.intakeArmToIntakeAngleCommand());
 
-                codriver.rightBumper().and(codriver.x()).onTrue(m_intakeArm.intakeArmToMidDownAngleCommand());
+                // codriver.rightBumper().and(codriver.b()).onTrue(m_intakeArm.intakeArmToMidUpAngleCommand());
 
-                codriver.rightBumper().and(codriver.povUp()).whileTrue(m_intakeArm.helpShootCommand(1, Degrees.of(2)));
+                // codriver.rightBumper().and(codriver.x()).onTrue(m_intakeArm.intakeArmToMidDownAngleCommand());
 
-                codriver.rightBumper().and(codriver.povDown())
-                                .onTrue(clearRevStickyFaultsCommand()
-                                                .alongWith(clearShooterStickyFaultsCommand()));
+                // codriver.rightBumper().and(codriver.povUp()).whileTrue(m_intakeArm.helpShootCommand(1,
+                // Degrees.of(2)));
+
+                // codriver.rightBumper().and(codriver.povDown())
+                // .onTrue(clearRevStickyFaultsCommand()
+                // .alongWith(clearShooterStickyFaultsCommand()));
 
                 codriver.rightTrigger().and(codriver.povUp())
-                                .whileTrue(m_feederBelt.jogFeederBeltCommand());
+                                .whileTrue(m_feederBelt.jogFeederBeltCommand(() -> .2));
 
                 codriver.rightTrigger().and(codriver.povDown()).onTrue(Commands.none());
 
@@ -462,22 +469,13 @@ public class RobotContainer {
                                 m_feederRoller.stopFeederRollerCommand(),
                                 m_feederBelt.stopFeederBeltCommand(),
                                 m_intake.stopIntakeCommand());
-
         }
 
-        //
-        // //Breakover Angle (B°) = 2 × tan-1(2 × Ground Clearance (GC) / Wheelbase
-        // (WB)).
-        // tan(B/2)/2 = Ground Clearance (GC) / Wheelbase (WB)
-        // Ground Clearance = WheelBase * tan(B/2)/2
-        // For B = 5 degrees tan/2 = .06
-        // 20" WB GC = 1.2
-        // 23" WB GC = 1.38"
-        // 31" WB GC 1.8"
-        // Track width is 2 * 11.6875 and wheel base is 2 * 10.1875 inches
-        // Diagonal between wheels = 2*15.5 = 31
-        // Ramp angle is 15 degrees and width is 44 inches
-        // Ramp height is then 22 * tan 15 = 22 * .268 = 5.9 inches
-        // Ramp slope length is 22/cos 15 = 22.77 inches
+        public Command unstickFuelCommand() {
+                return Commands.parallel(
+                                m_feederBelt.unstickFuelCommand(
+                                                -.25, .25, .25, .1),
+                                Commands.run(() -> m_feederRoller.runFeederRollerAtVelocity(-200)));                                                
+        }
 
 }
