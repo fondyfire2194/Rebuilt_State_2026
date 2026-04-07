@@ -6,7 +6,6 @@ package frc.robot.commands;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FeederSetpoints;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -24,9 +23,7 @@ public class ShootCommand extends Command {
   private final FeederBeltSubsystem m_feederBelt;
   private final CommandSwerveDrivetrain m_swerve;
   private boolean m_bypassAlign;
-  private Timer beltTimer = new Timer();
   private boolean okToShoot;
-  private boolean lookForPulse;
   private boolean okToRunBelt;
 
   public ShootCommand(TripleShooterSubsystem shooter, HoodSubsystem hood, FeederRollerSubsystem feederRoller,
@@ -45,8 +42,7 @@ public class ShootCommand extends Command {
   public void initialize() {
     okToShoot = false;
     okToRunBelt = false;
-    beltTimer.start();
-    lookForPulse = false;
+
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -63,16 +59,18 @@ public class ShootCommand extends Command {
 
     m_shooter.bypassShootInterlocks = m_bypassAlign;
 
-    if (!okToShoot)
+    if (!okToRunBelt) 
       m_feederBelt.runFeederBeltAtVelocity(FeederSetpoints.kBeltReverseRPM);
+    
 
-    if ((m_shooter.allVelocityInTolerance()
-        && m_hood.isPositionWithinTolerance() && (m_swerve.alignedToTarget || m_shooter.bypassShootInterlocks))) {
+    if (!okToShoot)
+      m_feederRoller.runFeederRollerAtVelocity(-200);
+
+    if ((m_shooter.allVelocityInTolerance() && m_hood.isPositionWithinTolerance()
+        && (m_swerve.alignedToTarget || m_shooter.bypassShootInterlocks)))
       okToShoot = true;
-    }
 
     if (okToShoot) {
-
       m_feederRoller.runFeederRollerAtVelocity();
 
       if (Math.abs(m_feederRoller.feederRollerMotor.getEncoder().getVelocity()) > FeederSetpoints.rollerSpeedToStartBelt
@@ -80,26 +78,7 @@ public class ShootCommand extends Command {
         okToRunBelt = true;
 
       if (okToRunBelt) {
-
-        if (!lookForPulse && beltTimer.get() > m_feederBelt.beltInitialShootTime) {
-          lookForPulse = true;
-          beltTimer.reset();
-        }
-
-        if (lookForPulse && beltTimer.get() > m_feederBelt.beltStartPulseTime)
-          m_feederBelt.pulse = true;
-
-        if (lookForPulse && beltTimer.get() > m_feederBelt.beltStopPulseTime) {
-          m_feederBelt.pulse = false;
-          beltTimer.reset();
-        }
-
-         m_feederBelt.pulse = false;// force no belt reverse pulse
-
-        if (!m_feederBelt.pulse)
-          m_feederBelt.runFeederBeltAtVelocity();
-        else
-          m_feederBelt.runFeederBeltAtVelocity(FeederSetpoints.kBeltReverseRPM);
+        m_feederBelt.runFeederBeltAtVelocity();
       }
     }
 

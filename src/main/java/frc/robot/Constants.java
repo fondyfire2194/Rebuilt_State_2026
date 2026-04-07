@@ -343,7 +343,7 @@ public final class Constants {
     public static double kBeltShootRPM = 3600;// with 3:1 reduction gives 20 rps * PI * 2"= 120 inches per second
     public static double kBeltReverseRPM = 60;// 2 inches per second
     
-    public static double kRollerShootRPM = 3600;// 60 rps *PI * 2 = 360 inches per second
+    public static double kRollerShootRPM = 2800;// 60 rps *PI * 2 = 360 inches per second
     public static double rollerSpeedToStartBelt = kRollerShootRPM * .8;
   }
 

@@ -61,17 +61,7 @@ public class FeederBeltSubsystem extends SubsystemBase {
   public final Alert feederBeltAlert = new Alert(
       "Feeder Belt Fault",
       AlertType.kError);
-
-  public boolean pulse;
-
-  public double beltStartPulseTime = 2.;
-  public double beltPulseTime = .5;
-
-  public double beltStopPulseTime = beltStartPulseTime + beltPulseTime;
-
-  public double beltInitialShootTime = 5.;
-
-  private double positionTolerance = .1;
+  
 
   public FeederBeltSubsystem(boolean showData) {
     feederBeltMotor = new SparkMax(Constants.CANIDConstants.feederBeltID, MotorType.kBrushless);
@@ -103,18 +93,10 @@ public class FeederBeltSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-
     DogLog.log("Feeder/BeltRPM", feederBeltMotor.getEncoder().getVelocity());
-    DogLog.log("Feeder/BeltPosition", feederBeltMotor.getEncoder().getPosition());
-    DogLog.log("Feeder/BeltControllerAtSetpoint", closedLoopController.isAtSetpoint());
-    DogLog.log("Feeder/BeltInPosition", atPositionSetpoint());
-
     DogLog.log("Feeder/BeltAmps", feederBeltMotor.getOutputCurrent());
     DogLog.log("Feeder/BeltVolts", feederBeltMotor.getAppliedOutput() * RobotController.getBatteryVoltage());
-
   }
-
-  // feeder belt
 
   public void runFeederBeltMotor(double power) {
     feederBeltMotor.set(power);
@@ -145,10 +127,6 @@ public class FeederBeltSubsystem extends SubsystemBase {
     return feederBeltMotor.getEncoder().getPosition();
   }
 
-  public boolean atPositionSetpoint() {
-    return Math
-        .abs(closedLoopController.getSetpoint() - feederBeltMotor.getEncoder().getPosition()) < positionTolerance;
-  }
 
   public void stopFeederBeltMotor() {
     feederBeltMotor.set(0);
