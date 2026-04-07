@@ -179,6 +179,7 @@ public class TripleShooterSubsystem extends SubsystemBase {
       DogLog.log("Shooter/Right Shooter", "Could not apply configs, error code: " + statusR.toString());
     }
 
+    setDefaultCommand(stopAllShootersCommand());
   }
 
   public void runVelocityVoltage(TalonFX motor) {
@@ -245,7 +246,8 @@ public class TripleShooterSubsystem extends SubsystemBase {
         runOnce(() -> resetShooterIsRunning()),
         runOnce(() -> stopVelocityVoltage(leftMotor)),
         runOnce(() -> stopVelocityVoltage(middleMotor)),
-        runOnce(() -> stopVelocityVoltage(rightMotor)));
+        runOnce(() -> stopVelocityVoltage(rightMotor)))
+        .withName("StopShooters");
 
   }
 
@@ -366,7 +368,8 @@ public class TripleShooterSubsystem extends SubsystemBase {
           break;
 
         case 5:
-          logStep = -1;
+          if (getCurrentCommand() != null)
+            DogLog.log("Shooter/CurrentCommand", getCurrentCommand().getName());
           break;
 
         case 6:

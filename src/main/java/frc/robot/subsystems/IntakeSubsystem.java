@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -31,15 +30,12 @@ public class IntakeSubsystem extends SubsystemBase {
   private SparkClosedLoopController intakeClosedLoopController;
   private double intakePowerSim;
   public boolean logData;
-  private Timer faultCheckTimer;
 
   public final Alert intakeAlert = new Alert(
       "Intake Fault",
       AlertType.kError);
-  private final Alert intakeCanbusAlert = new Alert(
-      "Intake Loss of Canbus",
-      AlertType.kError);
-  private double faultCheckTime = 5;
+
+  private double targetRPM;
 
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem(boolean logData) {
@@ -58,9 +54,8 @@ public class IntakeSubsystem extends SubsystemBase {
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
     this.logData = logData;
-    faultCheckTimer = new Timer();
-    faultCheckTimer.start();
     intakeClosedLoopController = intakeMotor.getClosedLoopController();
+   // setDefaultCommand(stopIntakeCommand());
   }
 
   public Command clearIntakeStickyFaultsCommand() {
@@ -69,11 +64,13 @@ public class IntakeSubsystem extends SubsystemBase {
 
   /** Set the intake motor power in the range of [-1, 1]. */
   private void runIntakeMotor(double power) {
+    targetRPM=power*5700;
     intakeMotor.set(power);
     intakePowerSim = power;
   }
 
   public void stopIntakeMotor() {
+    targetRPM = 0;
     intakeMotor.set(0);
     intakePowerSim = 0;
   }
@@ -83,15 +80,16 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public Command stopIntakeCommand() {
-    return Commands.runOnce(() -> stopIntakeMotor());
+    return runOnce(() -> stopIntakeMotor()).withName("StopIntake");
   }
 
   public void runIntakeAtVelocity() {
+    targetRPM = IntakeSetpoints.kIntakeRPM;
     intakeClosedLoopController.setSetpoint(IntakeSetpoints.kIntakeRPM, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
   }
 
   public Command runIntakeAtVelocityCommand() {
-    return Commands.run(() -> runIntakeAtVelocity());
+    return run(() -> runIntakeAtVelocity()).withName("RunIntake");
   }
 
   /**
@@ -142,17 +140,17 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    if (getCurrentCommand() != null)
+      DogLog.log("Intake/CurrentCommand", getCurrentCommand().getName());
+
     if (logData) {
-      DogLog.log("Intake/TargetRPM", IntakeSetpoints.kIntakeRPM);
-      DogLog.log("Intake/MotorRPM", intakeMotor.getEncoder().getVelocity());
-      DogLog.log("Intake/MotorAmps", intakeMotor.getOutputCurrent());
-      DogLog.log("Intake/MotorVolts", intakeMotor.getAppliedOutput() * RobotController.getBatteryVoltage());
+      DogLog.log("Intake/TargetRPM", targetRPM);
+      DogLog.log("Intake/RPM", intakeMotor.getEncoder().getVelocity());
+      DogLog.log("Intake/Amps", intakeMotor.getOutputCurrent());
+      DogLog.log("Intake/Volts", intakeMotor.getAppliedOutput() * RobotController.getBatteryVoltage());
     }
-    if (faultCheckTimer.get() > faultCheckTime) {
-      intakeAlert.set(intakeMotor.hasActiveFault() || intakeMotor.hasStickyFault());
-      intakeCanbusAlert.set(checkIntakeCanFault());
-      faultCheckTimer.restart();
-    }
+
   }
 
   public boolean checkIntakeCanFault() {

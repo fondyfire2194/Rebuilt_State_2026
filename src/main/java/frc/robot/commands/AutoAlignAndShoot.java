@@ -13,7 +13,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FeederSetpoints;
 import frc.robot.Constants.RobotConstants;
@@ -46,29 +46,23 @@ public class AutoAlignAndShoot extends Command {
   private int alignedCounter;
   private boolean okToShoot;
 
-  private int shootRunning;
-  private boolean oKStartBelt;
-  private boolean slowBelt;
-  public double beltSlowdownTime = 2.;
-  public double beltSlowTime = .5;
-
-  public double beltEndSlowTime = beltSlowdownTime + beltSlowTime;
-
-  public double beltInitialShootTime = 5.;
-
-  private Timer beltTimer = new Timer();
+  private int running;
+  private boolean okToRunBelt;
 
   public AutoAlignAndShoot(CommandSwerveDrivetrain swerve, TripleShooterSubsystem shooter, HoodSubsystem hood,
-      IntakeSubsystem intake, FeederRollerSubsystem feederRoller, FeederBeltSubsystem feederBelt,double toleranceDegrees) {
+      IntakeSubsystem intake, FeederRollerSubsystem feederRoller, FeederBeltSubsystem feederBelt,
+      double toleranceDegrees) {
 
     m_swerve = swerve;
     m_shooter = shooter;
     m_hood = hood;
     m_intake = intake;
     m_feederRoller = feederRoller;
-    m_feederBelt=feederBelt;
+    m_feederBelt = feederBelt;
     m_toleranceDegrees = toleranceDegrees;
     addRequirements(m_swerve);
+    addRequirements(m_feederBelt);
+    addRequirements(m_feederRoller);
   }
 
   // Called when the command is initially scheduled.
@@ -82,16 +76,21 @@ public class AutoAlignAndShoot extends Command {
     targetPose = AllianceUtil.getHubPose();
     m_swerve.isAligning = true;
     alignedCounter = 0;
-    oKStartBelt = false;
+    okToRunBelt = false;
     okToShoot = false;
-    beltTimer.start();
-    slowBelt = false;
     m_swerve.alignedToTarget = false;
+    running = 0;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    running++;
+    if (!okToRunBelt)
+      m_feederBelt.runFeederBeltAtVelocity(FeederSetpoints.kBeltReverseRPM);
+
+    if (!okToShoot)
+      m_feederRoller.runFeederRollerAtVelocity(FeederSetpoints.kRollersReverseRPM);
 
     if (!m_swerve.alignedToTarget) {
 
@@ -153,42 +152,26 @@ public class AutoAlignAndShoot extends Command {
         okToShoot = true;
 
         if (okToShoot) {
-
           m_feederRoller.runFeederRollerAtVelocity();
 
-          if (Math.abs(m_feederRoller.feederRollerMotor.getEncoder().getVelocity()) > FeederSetpoints.rollerSpeedToStartBelt)
-            oKStartBelt = true;
+          if (Math.abs(
+              m_feederRoller.feederRollerMotor.getEncoder().getVelocity()) > FeederSetpoints.rollerSpeedToStartBelt
+              || RobotBase.isSimulation() && running > 100)
+            okToRunBelt = true;
 
-          if (oKStartBelt)
-
-            if (!slowBelt && beltTimer.get() > beltInitialShootTime) {
-              slowBelt = true;
-              beltTimer.reset();
-            }
-
-          if (slowBelt && beltTimer.get() > beltEndSlowTime) {
-            slowBelt = false;
-            beltTimer.reset();
-          }
-
-          slowBelt = false;// force no belt slow
-
-          if (!slowBelt) {
+          if (okToRunBelt)
             m_feederBelt.runFeederBeltAtVelocity(FeederSetpoints.kBeltShootRPM);
-
-          } else
-            m_feederBelt.runFeederBeltAtVelocity(FeederSetpoints.kBeltShootRPM * .75);
 
         }
 
-        m_feederBelt.runFeederBeltAtVelocity();
       }
 
-      DogLog.log("Shoot/OKTOShoot", okToShoot);
-      DogLog.log("Shoot/ShootersAtSpeed", m_shooter.allVelocityInTolerance());
-      DogLog.log("Shoot/HoodAtTarget", m_hood.isPositionWithinTolerance());
-      DogLog.log("Shoot/Aligned", m_swerve.alignedToTarget);
-      DogLog.log("Shoot/Running", shootRunning);
+      DogLog.log("ShootAuto/OKTOShoot", okToShoot);
+       DogLog.log("ShootAuto/OKRunBelt", okToRunBelt);
+      DogLog.log("ShootAuto/ShootersAtSpeed", m_shooter.allVelocityInTolerance());
+      DogLog.log("ShootAuto/HoodAtTarget", m_hood.isPositionWithinTolerance());
+      DogLog.log("ShootAuto/Aligned", m_swerve.alignedToTarget);
+      DogLog.log("ShootAuto/Running", running);
 
     }
   }

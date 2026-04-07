@@ -6,6 +6,8 @@ package frc.robot.subsystems;
 
 import java.util.function.DoubleSupplier;
 
+import org.jspecify.annotations.Nullable;
+
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -19,6 +21,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -61,7 +64,8 @@ public class FeederBeltSubsystem extends SubsystemBase {
   public final Alert feederBeltAlert = new Alert(
       "Feeder Belt Fault",
       AlertType.kError);
-  
+
+  private double targetRPM;
 
   public FeederBeltSubsystem(boolean showData) {
     feederBeltMotor = new SparkMax(Constants.CANIDConstants.feederBeltID, MotorType.kBrushless);
@@ -89,25 +93,34 @@ public class FeederBeltSubsystem extends SubsystemBase {
 
     feederBeltMotor.getEncoder().setPosition(0);
 
+    setDefaultCommand(stopFeederBeltCommand());
   }
 
   @Override
   public void periodic() {
-    DogLog.log("Feeder/BeltRPM", feederBeltMotor.getEncoder().getVelocity());
-    DogLog.log("Feeder/BeltAmps", feederBeltMotor.getOutputCurrent());
-    DogLog.log("Feeder/BeltVolts", feederBeltMotor.getAppliedOutput() * RobotController.getBatteryVoltage());
+    if (getCurrentCommand() != null)
+      DogLog.log("Belt/CurrentCommand", getCurrentCommand().getName());
+      
+    DogLog.log("Belt/TargetRPM", targetRPM);
+
+    DogLog.log("Belt/RPM", feederBeltMotor.getEncoder().getVelocity());
+    DogLog.log("Belt/Amps", feederBeltMotor.getOutputCurrent());
+    DogLog.log("Belt/Volts", feederBeltMotor.getAppliedOutput() * RobotController.getBatteryVoltage());
   }
 
   public void runFeederBeltMotor(double power) {
+    targetRPM = power * 570;
     feederBeltMotor.set(power);
     feederBeltPowerSim = power;
   }
 
   public void runFeederBeltAtVelocity(double rpm) {
+    targetRPM = rpm;
     closedLoopController.setSetpoint(rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
   }
 
   public void runFeederBeltAtVelocity() {
+    targetRPM = FeederSetpoints.kBeltShootRPM;
     closedLoopController.setSetpoint(FeederSetpoints.kBeltShootRPM, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
   }
 
@@ -119,16 +132,14 @@ public class FeederBeltSubsystem extends SubsystemBase {
         Commands.waitSeconds(dwell))
         .repeatedly()
         .andThen(jogFeederBeltCommand(() -> 0).withTimeout(.1));
-
-    // .andThen(stopFeederBeltCommand());
   }
 
   public double getBeltPosition() {
     return feederBeltMotor.getEncoder().getPosition();
   }
 
-
   public void stopFeederBeltMotor() {
+    targetRPM = 0;
     feederBeltMotor.set(0);
     feederBeltPowerSim = 0;
   }
@@ -138,7 +149,7 @@ public class FeederBeltSubsystem extends SubsystemBase {
   }
 
   public Command stopFeederBeltCommand() {
-    return Commands.runOnce(() -> stopFeederBeltMotor());
+    return runOnce(() -> stopFeederBeltMotor()).withName("StopBelt");
   }
 
   /**

@@ -341,8 +341,9 @@ public final class Constants {
     public static final double kFeedBeltJogSetpoint = 0.5;
     // shooter at 3000 rpm with 4 inch roller gives 600 inches per second
     public static double kBeltShootRPM = 3600;// with 3:1 reduction gives 20 rps * PI * 2"= 120 inches per second
-    public static double kBeltReverseRPM = 60;// 2 inches per second
-    
+    public static double kBeltReverseRPM = -60;//
+    public static double kRollersReverseRPM = -200;//
+
     public static double kRollerShootRPM = 2800;// 60 rps *PI * 2 = 360 inches per second
     public static double rollerSpeedToStartBelt = kRollerShootRPM * .8;
   }

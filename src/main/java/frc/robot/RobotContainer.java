@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.CameraConstants;
+import frc.robot.Constants.FeederSetpoints;
 import frc.robot.Constants.RobotConstants;
 import frc.robot.commands.AlignTargetOdometry;
 import frc.robot.commands.AutoAlignAndShoot;
@@ -151,7 +152,40 @@ public class RobotContainer {
                 m_intakeArm.setDefaultCommand(m_intakeArm.positionIntakeArmCommand());
 
                 m_hood.setDefaultCommand(m_hood.positionHoodCommand());
+
+                // m_intake.setDefaultCommand(m_intake.stopIntakeCommand().withName("IntakeDefault")
+                // .andThen(() -> {
+                // }));
+
+                // m_shooter.setDefaultCommand(m_shooter.stopAllShootersCommand().withName("ShooterDefault")
+                // .andThen(() -> {
+                // }));
+
+                // m_feederRoller.setDefaultCommand(m_feederRoller.stopFeederRollerCommand().withName("RollersDefault")
+                // .andThen(() -> {
+                // }));
+                // m_feederBelt.setDefaultCommand(m_feederBelt.stopFeederBeltCommand().withName("BeltDefault")
+                // .andThen(() -> {
+                // }));
         }
+
+        /**
+         * Rollers and belt conditions
+         * rollers and belts have stop default commands
+         * a)-Feeder rollers and belts in reverse to keep fuel clear of rollers
+         * b)-Feeder rollers in reverse and belt move forward and reverse to unstick
+         * fuel
+         * c)- Belt in reverse, until rollers at speed for shooting
+         * d) Feeder rollers run shoot speed with belts in reverse
+         * e) Feeder rollers abd belts run shoot speed
+         * 
+         * During intake do b) then a) when intaking ends
+         * Shoot commands does a) initially as well as starting shooters
+         * when shooters at speed, do c) rollers are started at shoot speed and
+         * direction
+         * when rollers at speed belt is started at shoot speed
+         * 
+         */
 
         private void configureDriverBindings() {
                 // Note that X is defined as forward according to WPILib convention,
@@ -169,20 +203,16 @@ public class RobotContainer {
                 // new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
                 driver.leftTrigger().whileTrue(
-                                Commands.parallel(
-                                                new ShootCommand(m_shooter, m_hood, m_feederRoller, m_feederBelt,
-                                                                drivetrain,
-                                                                false),
-                                                Commands.sequence(Commands.waitSeconds(6),
-                                                                m_intakeArm.helpShootCommand(.5, Degrees.of(2)))));
+                                new ShootCommand(m_shooter, m_hood, m_feederRoller, m_feederBelt,
+                                                m_intake, drivetrain,
+                                                false).withName("ShootCommand"));
 
                 driver.rightTrigger().whileTrue(
                                 Commands.parallel(
                                                 m_intakeArm.intakeArmToIntakeAngleCommand(),
                                                 m_intake.runIntakeAtVelocityCommand(),
-                                                unstickFuelCommand()))
-                                .onFalse(
-                                                m_intake.stopIntakeCommand());
+                                                unstickFuelCommand()).withName("TeleopIntake"))
+                                .onFalse(keepFuelClearOfRollersCommand());
 
                 driver.leftBumper().onTrue(
                                 Commands.sequence(
@@ -197,26 +227,23 @@ public class RobotContainer {
                                                 stopShootersFeedersIntake(),
                                                 m_intakeArm.intakeArmToClearAngleCommand()));
 
-                driver.y().onTrue(m_hood.setManualTargetCommand(HoodSubsystem.kMinPosition.in(Degrees)));
+                driver.y().onTrue(Commands.none());
 
                 driver.b().onTrue(presetShoot(trenchPresetDistance));
 
                 driver.x().onTrue(presetShoot(towerPresetDistance));
 
-                driver.a().onTrue(m_hood.setManualTargetCommand(HoodSubsystem.kMaxPosition.in(Degrees)));
+                driver.a().onTrue(m_intakeArm.helpShootCommand(.5, Degrees.of(2)));
 
-                driver.povUp().onTrue(m_shooter.changeFinalTargetVelocityCommand(100));
+                driver.povUp().onTrue(Commands.none());
 
-                driver.povDown().onTrue(m_shooter.changeFinalTargetVelocityCommand(-100));
+                driver.povDown().onTrue(Commands.none());
 
                 driver.povLeft().onTrue(Commands.none());
-               
+
                 driver.povRight().whileTrue(
-                                Commands.deadline(
-                                                m_feederBelt.unstickFuelCommand(
-                                                         -.25, -.25, .25, .1),
-                                                Commands.run(() -> m_feederRoller.runFeederRollerAtVelocity(-200)))
-                                                .andThen(m_feederRoller.stopFeederRollerCommand()));
+                                unstickFuelCommand()
+                                                .andThen(keepFuelClearOfRollersCommand()));
 
                 driver.back().onTrue(Commands.runOnce(() -> drivetrain.getPigeon2().reset()));
 
@@ -353,14 +380,12 @@ public class RobotContainer {
 
         private void registerNamedCommands() {
 
-                NamedCommands.registerCommand("ALIGN",
-                                new AutoAlignHub(drivetrain, m_shooter, m_hood, m_intake, true, 2));
-
                 NamedCommands.registerCommand("ALIGN_AND_SHOOT",
 
-                                Commands.deadline(
-                                                Commands.waitSeconds(12),
-                                                new AutoAlignAndShoot(drivetrain, m_shooter, m_hood, m_intake,
+                                Commands.parallel(
+                                                new AutoAlignAndShoot(
+                                                                drivetrain, m_shooter,
+                                                                m_hood, m_intake,
                                                                 m_feederRoller,
                                                                 m_feederBelt, 2),
                                                 Commands.sequence(
@@ -368,22 +393,11 @@ public class RobotContainer {
                                                                 m_intakeArm.helpShootCommand(
                                                                                 .75,
                                                                                 Degrees.of(2))))
+                                                .withTimeout(12)
                                                 .andThen(stopShootersFeedersIntake()));
 
-                NamedCommands.registerCommand("SHOOT",
-
-                                Commands.deadline(
-
-                                                Commands.waitSeconds(12),
-                                                new ShootCommand(m_shooter, m_hood, m_feederRoller,
-                                                                m_feederBelt, drivetrain, false),
-                                                Commands.sequence(
-                                                                Commands.waitSeconds(4),
-                                                                m_intakeArm.helpShootCommand(
-                                                                                .75,
-                                                                                Degrees.of(2))))
-                                                .andThen(stopShootersFeedersIntake()));
-
+                NamedCommands.registerCommand("UnstickFuel",
+                                unstickFuelCommand());
         }
 
         private void registerEventTriggers() {
@@ -425,18 +439,18 @@ public class RobotContainer {
                                                                 ShootingData.hoodAngleMap.get(distance).getDegrees()))
 
                                                 .andThen(
-                                                                Commands.deadline(
-                                                                                Commands.waitSeconds(15),
+                                                                Commands.parallel(
                                                                                 new ShootCommand(m_shooter, m_hood,
                                                                                                 m_feederRoller,
                                                                                                 m_feederBelt,
-                                                                                                drivetrain,
+                                                                                                m_intake, drivetrain,
                                                                                                 true),
                                                                                 Commands.sequence(
                                                                                                 Commands.waitSeconds(5),
                                                                                                 m_intakeArm.helpShootCommand(
                                                                                                                 .75,
-                                                                                                                Degrees.of(2.5))))))
+                                                                                                                Degrees.of(2.5))))
+                                                                                .withTimeout(15)))
                                 .finallyDo((() -> stopShootersFeedersIntake()));
 
         }
@@ -468,14 +482,28 @@ public class RobotContainer {
                                 m_shooter.endShootCommand(),
                                 m_feederRoller.stopFeederRollerCommand(),
                                 m_feederBelt.stopFeederBeltCommand(),
-                                m_intake.stopIntakeCommand());
+                                m_intake.stopIntakeCommand()).withName("StopAll");
         }
 
         public Command unstickFuelCommand() {
                 return Commands.parallel(
-                                m_feederBelt.unstickFuelCommand(
-                                                -.25, .25, .25, .1),
-                                Commands.run(() -> m_feederRoller.runFeederRollerAtVelocity(-200)));                                                
+                                m_feederBelt.unstickFuelCommand(25, .25, .25, .1),
+                                Commands.run(() -> m_feederRoller
+                                                .runFeederRollerAtVelocity(FeederSetpoints.kRollersReverseRPM),
+                                                m_feederRoller))
+                                .withName("UnstickFuel");
+        }
+
+        public Command keepFuelClearOfRollersCommand() {
+                return Commands.parallel(
+                                Commands.run(() -> m_feederBelt
+                                                .runFeederBeltAtVelocity(FeederSetpoints.kBeltReverseRPM),
+                                                m_feederBelt),
+                                Commands.run(() -> m_feederRoller
+                                                .runFeederRollerAtVelocity(FeederSetpoints.kRollersReverseRPM),
+                                                m_feederRoller))
+                                .withName("KeepFuelClear");
+
         }
 
 }

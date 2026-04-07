@@ -62,17 +62,20 @@ public class FeederRollerSubsystem extends SubsystemBase {
 
     closedLoopController = feederRollerMotor.getClosedLoopController();
 
+    setDefaultCommand(stopFeederRollerCommand());
     this.showData = showData;
   }
 
   @Override
   public void periodic() {
+    if (getCurrentCommand() != null)
+      DogLog.log("Roller/CurrentCommand", getCurrentCommand().getName());
 
     // This method will be called once per scheduler run
-    DogLog.log("Feeder/RollerRPM", feederRollerMotor.getEncoder().getVelocity());
-    DogLog.log("Feeder/RollerTargetRPM", closedLoopController.getSetpoint());
-    DogLog.log("Feeder/RollerAmps", feederRollerMotor.getOutputCurrent());
-    DogLog.log("Feeder/RollerVolts", feederRollerMotor.getAppliedOutput() * RobotController.getBatteryVoltage());
+    DogLog.log("Roller/RPM", feederRollerMotor.getEncoder().getVelocity());
+    DogLog.log("Roller/TargetRPM", closedLoopController.getSetpoint());
+    DogLog.log("Roller/Amps", feederRollerMotor.getOutputCurrent());
+    DogLog.log("Roller/Volts", feederRollerMotor.getAppliedOutput() * RobotController.getBatteryVoltage());
 
   }
 
@@ -100,7 +103,7 @@ public class FeederRollerSubsystem extends SubsystemBase {
   }
 
   public Command stopFeederRollerCommand() {
-    return Commands.runOnce(() -> stopFeederRollerMotor());
+    return runOnce(() -> stopFeederRollerMotor()).withName("StopRollers");
   }
 
   /**

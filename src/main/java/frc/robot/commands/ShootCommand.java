@@ -12,6 +12,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.FeederBeltSubsystem;
 import frc.robot.subsystems.FeederRollerSubsystem;
 import frc.robot.subsystems.HoodSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TripleShooterSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
@@ -21,20 +22,25 @@ public class ShootCommand extends Command {
   private final HoodSubsystem m_hood;
   private final FeederRollerSubsystem m_feederRoller;
   private final FeederBeltSubsystem m_feederBelt;
+  private final IntakeSubsystem m_intake;
   private final CommandSwerveDrivetrain m_swerve;
   private boolean m_bypassAlign;
   private boolean okToShoot;
   private boolean okToRunBelt;
+  private int running;
 
   public ShootCommand(TripleShooterSubsystem shooter, HoodSubsystem hood, FeederRollerSubsystem feederRoller,
-      FeederBeltSubsystem feederBelt, CommandSwerveDrivetrain swerve, boolean bypassAlign) {
+      FeederBeltSubsystem feederBelt, IntakeSubsystem intake, CommandSwerveDrivetrain swerve, boolean bypassAlign) {
     // Use addRequirements() here to declare subsystem dependencies.
     m_shooter = shooter;
     m_hood = hood;
     m_feederRoller = feederRoller;
     m_feederBelt = feederBelt;
+    m_intake = intake;
     m_swerve = swerve;
     m_bypassAlign = bypassAlign;
+    addRequirements(m_feederBelt);
+    addRequirements(m_feederRoller);
   }
 
   // Called when the command is initially scheduled.
@@ -42,15 +48,20 @@ public class ShootCommand extends Command {
   public void initialize() {
     okToShoot = false;
     okToRunBelt = false;
-
+    running = 0;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
 
+    running++;
+
     m_shooter.runAllVelocityVoltage();
 
+    m_intake.runIntakeAtVelocity();
+
+    DogLog.log("Shoot/Running", running);
     DogLog.log("Shoot/OKToShoot", okToShoot);
     DogLog.log("Shoot/OKToRunBelt", okToRunBelt);
     DogLog.log("Shoot/ShootersAtSpeed", m_shooter.allVelocityInTolerance());
@@ -59,22 +70,21 @@ public class ShootCommand extends Command {
 
     m_shooter.bypassShootInterlocks = m_bypassAlign;
 
-    if (!okToRunBelt) 
+    if (!okToRunBelt)
       m_feederBelt.runFeederBeltAtVelocity(FeederSetpoints.kBeltReverseRPM);
-    
 
     if (!okToShoot)
-      m_feederRoller.runFeederRollerAtVelocity(-200);
+      m_feederRoller.runFeederRollerAtVelocity(FeederSetpoints.kRollersReverseRPM);
 
     if ((m_shooter.allVelocityInTolerance() && m_hood.isPositionWithinTolerance()
-        && (m_swerve.alignedToTarget || m_shooter.bypassShootInterlocks)))
+        && (m_swerve.alignedToTarget || m_shooter.bypassShootInterlocks || RobotBase.isSimulation() && running > 50)))
       okToShoot = true;
 
     if (okToShoot) {
       m_feederRoller.runFeederRollerAtVelocity();
 
       if (Math.abs(m_feederRoller.feederRollerMotor.getEncoder().getVelocity()) > FeederSetpoints.rollerSpeedToStartBelt
-          || RobotBase.isSimulation())
+          || RobotBase.isSimulation() && running > 100)
         okToRunBelt = true;
 
       if (okToRunBelt) {
@@ -89,7 +99,10 @@ public class ShootCommand extends Command {
   public void end(boolean interrupted) {
     m_feederBelt.stopFeederBeltMotor();
     m_feederRoller.stopFeederRollerMotor();
+    m_intake.stopIntakeMotor();
     okToShoot = false;
+    okToRunBelt = false;
+    running = 0;
 
   }
 
