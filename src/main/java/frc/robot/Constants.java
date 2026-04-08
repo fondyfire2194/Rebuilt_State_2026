@@ -328,7 +328,7 @@ public final class Constants {
 
   public static final class IntakeSetpoints {
     public static final double kJogIntake = 0.25;
-    public static final double kIntake = .99;
+    public static final double kIntake = .25;
     public static final double kExtake = -0.9;
     public static final double kIntakeRPM = 4800;
   }
@@ -341,11 +341,11 @@ public final class Constants {
     public static final double kFeedBeltJogSetpoint = 0.5;
     // shooter at 3000 rpm with 4 inch roller gives 600 inches per second
     public static double kBeltShootRPM = 3600;// with 3:1 reduction gives 20 rps * PI * 2"= 120 inches per second
-    public static double kBeltReverseRPM = -60;//
-    public static double kRollersReverseRPM = -200;//
+    public static double kBeltReverseRPM = -500;//
+    public static double kRollersReverseRPM = -500;//
 
-    public static double kRollerShootRPM = 2800;// 60 rps *PI * 2 = 360 inches per second
-    public static double rollerSpeedToStartBelt = kRollerShootRPM * .8;
+    public static double kRollerShootRPM = 4800;// 60 rps *PI * 2 = 360 inches per second
+    public static double rollerSpeedToStartBelt = kRollerShootRPM * .5;
   }
 
   public static final class HoodSetpoints {

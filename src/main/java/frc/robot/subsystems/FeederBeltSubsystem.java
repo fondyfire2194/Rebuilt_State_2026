@@ -93,14 +93,14 @@ public class FeederBeltSubsystem extends SubsystemBase {
 
     feederBeltMotor.getEncoder().setPosition(0);
 
-    setDefaultCommand(stopFeederBeltCommand());
+   // setDefaultCommand(stopFeederBeltCommand());
   }
 
   @Override
   public void periodic() {
     if (getCurrentCommand() != null)
       DogLog.log("Belt/CurrentCommand", getCurrentCommand().getName());
-      
+
     DogLog.log("Belt/TargetRPM", targetRPM);
 
     DogLog.log("Belt/RPM", feederBeltMotor.getEncoder().getVelocity());
@@ -112,6 +112,10 @@ public class FeederBeltSubsystem extends SubsystemBase {
     targetRPM = power * 570;
     feederBeltMotor.set(power);
     feederBeltPowerSim = power;
+  }
+
+  public Command runFeederBeltAtVelocityCommand(double rpm) {
+    return run(() -> runFeederBeltAtVelocity(rpm));
   }
 
   public void runFeederBeltAtVelocity(double rpm) {

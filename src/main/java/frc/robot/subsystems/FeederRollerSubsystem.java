@@ -92,6 +92,10 @@ public class FeederRollerSubsystem extends SubsystemBase {
     closedLoopController.setSetpoint(rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
   }
 
+  public Command runFeedRollerAtVelocityCommand() {
+    return run(() -> runFeederRollerAtVelocity());
+  }
+
   public void stopFeederRollerMotor() {
     closedLoopController.setSetpoint(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
     feederRollerMotor.set(0);

@@ -67,7 +67,7 @@ public class Intake4BarArmSubsystem extends SubsystemBase {
 
   public static Angle maxAngle = Degree.of(100);
   public static Angle minAngle = Degree.of(5);
-  public Angle intakingAngle = Degree.of(90.);
+  public Angle intakingAngle = Degree.of(93.);
 
   public Angle homeAngle = Degree.of(0);
   public Angle midUpAngle = Degree.of(55);
