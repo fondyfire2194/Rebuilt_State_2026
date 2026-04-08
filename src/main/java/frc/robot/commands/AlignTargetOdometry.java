@@ -47,6 +47,7 @@ public class AlignTargetOdometry extends Command {
   private int delayCount;
   private int delayLimit = 10;// 10*20ms
   private final double deadband = .02;
+  private boolean alternate;
 
   public AlignTargetOdometry(
       CommandSwerveDrivetrain swerve,
@@ -71,6 +72,7 @@ public class AlignTargetOdometry extends Command {
     m_swerve.isAligning = true;
     m_swerve.m_alignTargetPID.reset();
     delayCount = 0;
+    alternate = false;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -131,17 +133,21 @@ public class AlignTargetOdometry extends Command {
 
     m_swerve.alignedToTarget = Math.abs(m_swerve.m_alignTargetPID.getError()) < m_toleranceDegrees;
 
-    DogLog.log("Align/AlignedToHub", m_swerve.alignedToTarget);
-    DogLog.log("Align/AlignError", m_swerve.m_alignTargetPID.getError());
-    DogLog.log("Align/AlignDistance", distanceToTarget);
-    DogLog.log("Align/AlignAngle", targetDegrees);
-    DogLog.log("Align/HoodAngle", HoodSubsystem.autoTargetAngle);
-    DogLog.log("Align/ShootSpeed", shooter.autoSetTargetRPM);
-    DogLog.log("Align/Passing", passing);
-    DogLog.log("Align/TargetPose", targetPose);
-    DogLog.log("Align/AccumIntegral", m_swerve.m_alignTargetPID.getAccumulatedError());
-    DogLog.log("Align/RotationVal", rotationVal);
+    if (alternate) {
+      DogLog.log("Align/AlignedToHub", m_swerve.alignedToTarget);
+      DogLog.log("Align/AlignError", m_swerve.m_alignTargetPID.getError());
+      DogLog.log("Align/AlignDistance", distanceToTarget);
+      DogLog.log("Align/AlignAngle", targetDegrees);
+      DogLog.log("Align/HoodAngle", HoodSubsystem.autoTargetAngle);
+    } else {
+      DogLog.log("Align/ShootSpeed", shooter.autoSetTargetRPM);
+      DogLog.log("Align/Passing", passing);
+      DogLog.log("Align/TargetPose", targetPose);
+      DogLog.log("Align/AccumIntegral", m_swerve.m_alignTargetPID.getAccumulatedError());
+      DogLog.log("Align/RotationVal", rotationVal);
+    }
 
+    alternate = !alternate;
   }
 
   // Called once the command ends or is interrupted.

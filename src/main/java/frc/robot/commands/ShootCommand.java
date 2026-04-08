@@ -55,8 +55,6 @@ public class ShootCommand extends Command {
   @Override
   public void execute() {
 
-    running++;
-
     m_shooter.runAllVelocityVoltage();
 
     m_intake.runIntakeAtVelocity(1000);
@@ -77,14 +75,18 @@ public class ShootCommand extends Command {
       m_feederRoller.runFeederRollerAtVelocity(FeederSetpoints.kRollersReverseRPM);
 
     if ((m_shooter.allVelocityInTolerance() && m_hood.isPositionWithinTolerance()
-        && (m_swerve.alignedToTarget || m_shooter.bypassShootInterlocks || RobotBase.isSimulation() && running > 50)))
+        && (m_swerve.alignedToTarget || m_shooter.bypassShootInterlocks)))
       okRunRollers = true;
 
     if (okRunRollers) {
+
+      if (!okToRunBelt)
+        running++;
+        
       m_feederRoller.runFeederRollerAtVelocity();
 
       if (Math.abs(m_feederRoller.feederRollerMotor.getEncoder().getVelocity()) > FeederSetpoints.rollerSpeedToStartBelt
-          || RobotBase.isSimulation() && running > 100)
+          || running > 50)
         okToRunBelt = true;
 
       if (okToRunBelt) {

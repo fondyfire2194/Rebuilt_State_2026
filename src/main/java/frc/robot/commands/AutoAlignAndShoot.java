@@ -13,7 +13,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FeederSetpoints;
 import frc.robot.Constants.RobotConstants;
@@ -85,7 +84,7 @@ public class AutoAlignAndShoot extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    running++;
+
     if (!okToRunBelt)
       m_feederBelt.runFeederBeltAtVelocity(FeederSetpoints.kBeltReverseRPM);
 
@@ -136,7 +135,7 @@ public class AutoAlignAndShoot extends Command {
 
       DogLog.log("AutoAlign/AlignedToHub", m_swerve.alignedToTarget);
       DogLog.log("AutoAlign/AlignError", m_swerve.m_alignTargetPID.getError());
-      DogLog.log("AutoAAlign/AlignDistance", distanceToTarget);
+      DogLog.log("AutoAlign/AlignDistance", distanceToTarget);
       DogLog.log("AutoAlign/AlignAngle", targetDegrees);
       DogLog.log("AutoAlign/AccumIntegral", m_swerve.m_alignTargetPID.getAccumulatedError());
       DogLog.log("AutoAlign/RotationVal", rotationVal);
@@ -153,10 +152,12 @@ public class AutoAlignAndShoot extends Command {
 
         if (okRunRollers) {
           m_feederRoller.runFeederRollerAtVelocity();
+          if (!okToRunBelt)
+            running++;
 
           if (Math.abs(
               m_feederRoller.feederRollerMotor.getEncoder().getVelocity()) > FeederSetpoints.rollerSpeedToStartBelt
-              || RobotBase.isSimulation() && running > 100)
+              || running > 50)
             okToRunBelt = true;
 
           if (okToRunBelt)

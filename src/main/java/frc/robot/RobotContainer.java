@@ -212,7 +212,7 @@ public class RobotContainer {
                                                 m_intakeArm.intakeArmToIntakeAngleCommand(),
                                                 m_intake.runIntakeAtVelocityCommand(),
                                                 unstickFuelCommand()).withName("TeleopIntake"))
-                                .onFalse(m_intake.runIntakeAtVelocityCommand(1000));
+                                .onFalse(m_intake.startIntakeCommand());
 
                 driver.leftBumper().onTrue(
                                 Commands.sequence(
