@@ -88,10 +88,17 @@ public class IntakeSubsystem extends SubsystemBase {
     intakeClosedLoopController.setSetpoint(IntakeSetpoints.kIntakeRPM, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
   }
 
+   public void runIntakeAtVelocity(double rpm) {
+    targetRPM = rpm;
+    intakeClosedLoopController.setSetpoint(rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+  }
+
   public Command runIntakeAtVelocityCommand() {
     return run(() -> runIntakeAtVelocity()).withName("RunIntake");
   }
-
+ public Command runIntakeAtVelocityCommand(double rpm) {
+    return run(() -> runIntakeAtVelocity(rpm)).withName("RunIntake");
+  }
   /**
    * Command to run the intake and conveyor motors. When the command is
    * interrupted, e.g. the button is released,

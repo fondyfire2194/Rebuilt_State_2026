@@ -212,7 +212,7 @@ public class RobotContainer {
                                                 m_intakeArm.intakeArmToIntakeAngleCommand(),
                                                 m_intake.runIntakeAtVelocityCommand(),
                                                 unstickFuelCommand()).withName("TeleopIntake"))
-                                .onFalse(m_intake.startIntakeCommand());
+                                .onFalse(m_intake.runIntakeAtVelocityCommand(1000));
 
                 driver.leftBumper().onTrue(
                                 Commands.sequence(
@@ -230,7 +230,7 @@ public class RobotContainer {
                                                 stopShootersFeedersIntake(),
                                                 m_intakeArm.intakeArmToClearAngleCommand()));
 
-                driver.y().onTrue(m_feederRoller.runFeedRollerAtVelocityCommand());
+                driver.y().whileTrue(unstickFuelCommand());
 
                 driver.b().whileTrue(presetShoot(trenchPresetDistance));
 
@@ -238,14 +238,13 @@ public class RobotContainer {
 
                 driver.a().onTrue(m_intakeArm.helpShootCommand(.5, Degrees.of(2)));
 
-                driver.povUp().onTrue(Commands.none());
+                driver.povLeft().whileTrue(m_feederRoller.jogFeederRollerCommand());
 
-                driver.povDown().onTrue(Commands.none());
+                driver.povRight().whileTrue(m_feederRoller.jogReverseFeederRollerCommand());
 
-                driver.povLeft().onTrue(Commands.none());
+                driver.povUp().onTrue(m_feederRoller.runFeedRollerAtVelocityCommand());
 
-                driver.povRight().whileTrue(
-                                unstickFuelCommand());
+                driver.povDown().onTrue(m_feederRoller.stopFeederRollerCommand());
 
                 driver.back().onTrue(Commands.runOnce(() -> drivetrain.getPigeon2().reset()));
 

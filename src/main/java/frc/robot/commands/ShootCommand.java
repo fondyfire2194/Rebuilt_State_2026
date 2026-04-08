@@ -25,7 +25,7 @@ public class ShootCommand extends Command {
   private final IntakeSubsystem m_intake;
   private final CommandSwerveDrivetrain m_swerve;
   private boolean m_bypassAlign;
-  private boolean okToShoot;
+  private boolean okRunRollers;
   private boolean okToRunBelt;
   private int running;
 
@@ -46,7 +46,7 @@ public class ShootCommand extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    okToShoot = false;
+    okRunRollers = false;
     okToRunBelt = false;
     running = 0;
   }
@@ -59,10 +59,10 @@ public class ShootCommand extends Command {
 
     m_shooter.runAllVelocityVoltage();
 
-    m_intake.runIntakeAtVelocity();
+    m_intake.runIntakeAtVelocity(1000);
 
     DogLog.log("Shoot/Running", running);
-    DogLog.log("Shoot/OKToShoot", okToShoot);
+    DogLog.log("Shoot/OKRunRollers", okRunRollers);
     DogLog.log("Shoot/OKToRunBelt", okToRunBelt);
     DogLog.log("Shoot/ShootersAtSpeed", m_shooter.allVelocityInTolerance());
     DogLog.log("Shoot/HoodAtTarget", m_hood.isPositionWithinTolerance());
@@ -73,14 +73,14 @@ public class ShootCommand extends Command {
     if (!okToRunBelt)
       m_feederBelt.runFeederBeltAtVelocity(FeederSetpoints.kBeltReverseRPM);
 
-    if (!okToShoot)
+    if (!okRunRollers)
       m_feederRoller.runFeederRollerAtVelocity(FeederSetpoints.kRollersReverseRPM);
 
     if ((m_shooter.allVelocityInTolerance() && m_hood.isPositionWithinTolerance()
         && (m_swerve.alignedToTarget || m_shooter.bypassShootInterlocks || RobotBase.isSimulation() && running > 50)))
-      okToShoot = true;
+      okRunRollers = true;
 
-    if (okToShoot) {
+    if (okRunRollers) {
       m_feederRoller.runFeederRollerAtVelocity();
 
       if (Math.abs(m_feederRoller.feederRollerMotor.getEncoder().getVelocity()) > FeederSetpoints.rollerSpeedToStartBelt
@@ -100,7 +100,7 @@ public class ShootCommand extends Command {
     m_feederBelt.stopFeederBeltMotor();
     m_feederRoller.stopFeederRollerMotor();
     m_intake.stopIntakeMotor();
-    okToShoot = false;
+    okRunRollers = false;
     okToRunBelt = false;
     running = 0;
 

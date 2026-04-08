@@ -44,7 +44,7 @@ public class AutoAlignAndShoot extends Command {
 
   private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
   private int alignedCounter;
-  private boolean okToShoot;
+  private boolean okRunRollers;
 
   private int running;
   private boolean okToRunBelt;
@@ -77,7 +77,7 @@ public class AutoAlignAndShoot extends Command {
     m_swerve.isAligning = true;
     alignedCounter = 0;
     okToRunBelt = false;
-    okToShoot = false;
+    okRunRollers = false;
     m_swerve.alignedToTarget = false;
     running = 0;
   }
@@ -89,7 +89,7 @@ public class AutoAlignAndShoot extends Command {
     if (!okToRunBelt)
       m_feederBelt.runFeederBeltAtVelocity(FeederSetpoints.kBeltReverseRPM);
 
-    if (!okToShoot)
+    if (!okRunRollers)
       m_feederRoller.runFeederRollerAtVelocity(FeederSetpoints.kRollersReverseRPM);
 
     if (!m_swerve.alignedToTarget) {
@@ -134,12 +134,12 @@ public class AutoAlignAndShoot extends Command {
 
       m_swerve.alignedToTarget = alignedCounter >= 10;
 
-      DogLog.log("Align/AlignedToHub", m_swerve.alignedToTarget);
-      DogLog.log("Align/AlignError", m_swerve.m_alignTargetPID.getError());
-      DogLog.log("Align/AlignDistance", distanceToTarget);
-      DogLog.log("Align/AlignAngle", targetDegrees);
-      DogLog.log("Align/AccumIntegral", m_swerve.m_alignTargetPID.getAccumulatedError());
-      DogLog.log("Align/RotationVal", rotationVal);
+      DogLog.log("AutoAlign/AlignedToHub", m_swerve.alignedToTarget);
+      DogLog.log("AutoAlign/AlignError", m_swerve.m_alignTargetPID.getError());
+      DogLog.log("AutoAAlign/AlignDistance", distanceToTarget);
+      DogLog.log("AutoAlign/AlignAngle", targetDegrees);
+      DogLog.log("AutoAlign/AccumIntegral", m_swerve.m_alignTargetPID.getAccumulatedError());
+      DogLog.log("AutoAlign/RotationVal", rotationVal);
     }
 
     if (m_swerve.alignedToTarget) {
@@ -149,9 +149,9 @@ public class AutoAlignAndShoot extends Command {
       m_intake.runIntakeAtVelocity();
 
       if (m_shooter.allVelocityInTolerance() && m_hood.isPositionWithinTolerance()) {
-        okToShoot = true;
+        okRunRollers = true;
 
-        if (okToShoot) {
+        if (okRunRollers) {
           m_feederRoller.runFeederRollerAtVelocity();
 
           if (Math.abs(
@@ -166,12 +166,12 @@ public class AutoAlignAndShoot extends Command {
 
       }
 
-      DogLog.log("ShootAuto/OKTOShoot", okToShoot);
-       DogLog.log("ShootAuto/OKRunBelt", okToRunBelt);
-      DogLog.log("ShootAuto/ShootersAtSpeed", m_shooter.allVelocityInTolerance());
-      DogLog.log("ShootAuto/HoodAtTarget", m_hood.isPositionWithinTolerance());
-      DogLog.log("ShootAuto/Aligned", m_swerve.alignedToTarget);
-      DogLog.log("ShootAuto/Running", running);
+      DogLog.log("AutoShoot/OKTOShoot", okRunRollers);
+      DogLog.log("AutoShoot/OKRunBelt", okToRunBelt);
+      DogLog.log("AutoShoot/ShootersAtSpeed", m_shooter.allVelocityInTolerance());
+      DogLog.log("AutoShoot/HoodAtTarget", m_hood.isPositionWithinTolerance());
+      DogLog.log("AutoShoot/Aligned", m_swerve.alignedToTarget);
+      DogLog.log("AutoShoot/Running", running);
 
     }
   }
