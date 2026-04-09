@@ -134,6 +134,8 @@ public class HoodSubsystem extends SubsystemBase {
 
         setHoodUsingDistance(false);
 
+        hoodMotor.clearFaults();
+
         this.logData = logData;
 
     }

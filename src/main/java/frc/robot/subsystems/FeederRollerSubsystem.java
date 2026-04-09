@@ -59,7 +59,7 @@ public class FeederRollerSubsystem extends SubsystemBase {
         Configs.Feeder.feederRollerConfig,
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
-
+    feederRollerMotor.clearFaults();
     closedLoopController = feederRollerMotor.getClosedLoopController();
 
     setDefaultCommand(stopFeederRollerCommand());

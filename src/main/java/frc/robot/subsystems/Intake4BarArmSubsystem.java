@@ -114,6 +114,9 @@ public class Intake4BarArmSubsystem extends SubsystemBase {
 
     this.logData = logData;
 
+    intakeArmMotor.clearFaults();
+    intakeArmMotorFollower.clearFaults();
+
     intakeArmMotor.getEncoder().setPosition(homeAngle.in(Radians));
 
     kp = DogLog.tunable("IntakeArm/PGain", 8., newKp -> m_controller.setP(newKp));

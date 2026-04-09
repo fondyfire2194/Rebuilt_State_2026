@@ -30,12 +30,11 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import frc.robot.Configs;
 import frc.robot.Constants.CANIDConstants;
 import frc.robot.Constants.CanbusConstants;
@@ -166,6 +165,9 @@ public class TripleShooterSubsystem extends SubsystemBase {
     Configs.Shooter.configureLeftMotor(leftMotor, InvertedValue.Clockwise_Positive);
     Configs.Shooter.configureMiddleMotor(middleMotor, InvertedValue.Clockwise_Positive);
     Configs.Shooter.configureRightMotor(rightMotor, InvertedValue.Clockwise_Positive);
+    leftMotor.clearStickyFaults();
+    middleMotor.clearStickyFaults();
+    rightMotor.clearStickyFaults();
 
     setShootUsingDistance(false);
 

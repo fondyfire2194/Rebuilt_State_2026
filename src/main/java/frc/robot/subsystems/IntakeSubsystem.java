@@ -55,7 +55,7 @@ public class IntakeSubsystem extends SubsystemBase {
         PersistMode.kPersistParameters);
     this.logData = logData;
     intakeClosedLoopController = intakeMotor.getClosedLoopController();
-   // setDefaultCommand(stopIntakeCommand());
+    intakeMotor.clearFaults();
   }
 
   public Command clearIntakeStickyFaultsCommand() {

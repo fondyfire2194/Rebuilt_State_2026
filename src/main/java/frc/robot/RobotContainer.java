@@ -119,10 +119,11 @@ public class RobotContainer {
                 m_intakeArm = new Intake4BarArmSubsystem(logIntakeArmData);
                 m_llv = new LimelightVision(logLLData);
                 pdh = new PowerDistribution(Constants.CANIDConstants.pdh, ModuleType.kRev);
+                pdh.clearStickyFaults();
                 registerNamedCommands();
                 registerEventTriggers();
                 // configurePDH();
-
+                SmartDashboard.putData("PDH", pdh);
                 m_shooter.leftMotorActive = true;
                 m_shooter.middleMotorActive = true;
                 m_shooter.rightMotorActive = true;
