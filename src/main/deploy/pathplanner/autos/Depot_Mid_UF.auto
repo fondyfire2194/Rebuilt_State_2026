@@ -38,12 +38,6 @@
                 "data": {
                   "pathName": "PickupBmpDepMid"
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "UnstickFuel"
-                }
               }
             ]
           }

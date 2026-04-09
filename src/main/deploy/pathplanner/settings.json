@@ -4,6 +4,7 @@
   "holonomicMode": true,
   "pathFolders": [
     "DepotStart",
+    "DepotStartWide",
     "OutpostStart"
   ],
   "autoFolders": [],
