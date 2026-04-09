@@ -16,6 +16,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.events.EventTrigger;
 
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,7 +30,6 @@ import frc.robot.Constants.FeederSetpoints;
 import frc.robot.Constants.RobotConstants;
 import frc.robot.commands.AlignTargetOdometry;
 import frc.robot.commands.AutoAlignAndShoot;
-import frc.robot.commands.AutoAlignHub;
 import frc.robot.commands.ShootCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -90,7 +91,7 @@ public class RobotContainer {
 
         public final LimelightVision m_llv;
 
-        // public final PowerDistribution pdh;
+        public final PowerDistribution pdh;
 
         private boolean logShooterData = true;
         private boolean logHoodData = true;
@@ -117,7 +118,7 @@ public class RobotContainer {
                 m_intake = new IntakeSubsystem(logIntakeData);
                 m_intakeArm = new Intake4BarArmSubsystem(logIntakeArmData);
                 m_llv = new LimelightVision(logLLData);
-                // pdh = new PowerDistribution(CANIDConstants.pdh, ModuleType.kRev);
+                pdh = new PowerDistribution(Constants.CANIDConstants.pdh, ModuleType.kRev);
                 registerNamedCommands();
                 registerEventTriggers();
                 // configurePDH();
@@ -232,11 +233,11 @@ public class RobotContainer {
 
                 driver.y().whileTrue(unstickFuelCommand());
 
-                driver.b().whileTrue(presetShoot(trenchPresetDistance));
+                driver.b().onTrue(presetShoot(trenchPresetDistance));
 
-                driver.x().whileTrue(presetShoot(towerPresetDistance));
+                driver.x().onTrue(presetShoot(towerPresetDistance));
 
-                driver.a().onTrue(m_intakeArm.helpShootCommand(.5, Degrees.of(2)));
+                driver.a().whileTrue(m_intakeArm.helpShootCommand(.5, Degrees.of(2)));
 
                 driver.povLeft().whileTrue(m_feederRoller.jogFeederRollerCommand());
 
