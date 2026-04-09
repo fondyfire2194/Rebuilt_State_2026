@@ -7,19 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "OPToFPU"
+            "pathName": "OPToFW"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "OPFPUS"
+            "pathName": "OPFPUMW"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "PUOPS"
+            "pathName": "PUOPMW"
           }
         },
         {

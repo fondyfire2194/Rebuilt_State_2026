@@ -7,19 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "OutBmpToFuel"
+            "pathName": "OPToFPU"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "OutFuelPickupLong"
+            "pathName": "OPFPUL"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "PickupBumpOutpostLong"
+            "pathName": "PUOPL"
           }
         },
         {

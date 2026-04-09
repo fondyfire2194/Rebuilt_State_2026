@@ -3,9 +3,10 @@
   "robotLength": 0.962,
   "holonomicMode": true,
   "pathFolders": [
-    "DepotStart",
+    "OutpostStart",
+    "OutpostStartWide",
     "DepotStartWide",
-    "OutpostStart"
+    "DepotStart"
   ],
   "autoFolders": [
     "DepotStart",
