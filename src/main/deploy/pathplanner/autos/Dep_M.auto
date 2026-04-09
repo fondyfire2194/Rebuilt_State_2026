@@ -7,19 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "DepBmpToFuel"
+            "pathName": "DToFPU"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "DepFuelPickupMid"
+            "pathName": "DFPUM"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "PickupBmpDepMid"
+            "pathName": "PUDM"
           }
         },
         {
@@ -32,6 +32,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "DepotStart",
   "choreoAuto": false
 }

@@ -398,8 +398,6 @@ public class RobotContainer {
                                                 .withTimeout(12)
                                                 .andThen(stopShootersFeedersIntake()));
 
-                NamedCommands.registerCommand("UnstickFuel",
-                                unstickFuelCommand());
         }
 
         private void registerEventTriggers() {
@@ -408,14 +406,15 @@ public class RobotContainer {
                 runIntake.onTrue(
                                 Commands.sequence(
                                                 m_intakeArm.intakeArmToIntakeAngleCommand(),
-                                                m_intake.startIntakeCommand()));
+                                                m_intake.startIntakeCommand(),
+                                                Commands.waitSeconds(.5),
+                                                unstickFuelCommand()));
 
         }
 
         public Command getAutonomousCommand() {
                 /* Run the path selected from the auto chooser */
                 return autoChooser.getSelected();
-                // return new PathPlannerAuto("SimpleAuto");
         }
 
         public Command clearRevStickyFaultsCommand() {

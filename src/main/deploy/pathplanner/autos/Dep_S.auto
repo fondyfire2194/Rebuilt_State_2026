@@ -1,0 +1,37 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DToFPU"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DFPUS"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "PUDS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ALIGN_AND_SHOOT"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "DepotStart",
+  "choreoAuto": false
+}

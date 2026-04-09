@@ -7,19 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "OutBmpToFuel"
+            "pathName": "DToFPU"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "OutFuelPickupMid"
+            "pathName": "DFPUL"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "PickupBumpOutpostMid"
+            "pathName": "PUDL"
           }
         },
         {
@@ -32,6 +32,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "DepotStart",
   "choreoAuto": false
 }
