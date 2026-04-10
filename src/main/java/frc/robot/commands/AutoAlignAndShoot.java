@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FeederSetpoints;
+import frc.robot.Constants.IntakeSetpoints;
 import frc.robot.Constants.RobotConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.FeederBeltSubsystem;
@@ -104,7 +105,7 @@ public class AutoAlignAndShoot extends Command {
 
       m_shooter.runAllVelocityVoltage();
 
-      m_intake.runIntakeAtVelocity();
+      m_intake.runIntakeMotor(IntakeSetpoints.kIntakeSlow);
 
       targetDegrees = getAngleDegreesToTarget(targetPose, m_swerve.getState().Pose);
 
@@ -145,7 +146,7 @@ public class AutoAlignAndShoot extends Command {
 
       m_shooter.runAllVelocityVoltage();
 
-      m_intake.runIntakeAtVelocity();
+       m_intake.runIntakeMotor(IntakeSetpoints.kIntakeSlow);
 
       if (m_shooter.allVelocityInTolerance() && m_hood.isPositionWithinTolerance()) {
         okRunRollers = true;
@@ -162,7 +163,6 @@ public class AutoAlignAndShoot extends Command {
 
           if (okToRunBelt)
             m_feederBelt.runFeederBeltAtVelocity(FeederSetpoints.kBeltShootRPM);
-
         }
 
       }

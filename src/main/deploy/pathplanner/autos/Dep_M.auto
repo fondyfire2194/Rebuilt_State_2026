@@ -11,15 +11,41 @@
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "DFPUM"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "DFPUM"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "FUS"
+                }
+              }
+            ]
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "PUDM"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "PUDM"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "FUS"
+                }
+              }
+            ]
           }
         },
         {

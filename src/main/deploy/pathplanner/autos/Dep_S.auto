@@ -11,15 +11,41 @@
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "DFPUS"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "DFPUS"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "FUS"
+                }
+              }
+            ]
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "PUDS"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "PUDS"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "FUS"
+                }
+              }
+            ]
           }
         },
         {

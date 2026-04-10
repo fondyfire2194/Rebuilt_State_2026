@@ -328,7 +328,9 @@ public final class Constants {
 
   public static final class IntakeSetpoints {
     public static final double kJogIntake = 0.25;
-    public static final double kIntake = .25;
+    public static final double kIntake = .99;
+    public static final double kIntakeSlow = .25;
+    
     public static final double kExtake = -0.9;
     public static final double kIntakeRPM = 4800;
   }

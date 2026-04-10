@@ -63,7 +63,7 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   /** Set the intake motor power in the range of [-1, 1]. */
-  private void runIntakeMotor(double power) {
+  public void runIntakeMotor(double power) {
     targetRPM=power*5700;
     intakeMotor.set(power);
     intakePowerSim = power;
@@ -78,7 +78,9 @@ public class IntakeSubsystem extends SubsystemBase {
   public Command startIntakeCommand() {
     return Commands.runOnce(() -> runIntakeMotor(IntakeSetpoints.kIntake));
   }
-
+ public Command startIntakeCommandSlow() {
+    return Commands.runOnce(() -> runIntakeMotor(IntakeSetpoints.kIntakeSlow));
+  }
   public Command stopIntakeCommand() {
     return runOnce(() -> stopIntakeMotor()).withName("StopIntake");
   }

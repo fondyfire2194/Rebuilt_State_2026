@@ -11,15 +11,41 @@
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "OPFPUS"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "OPFPUS"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "FUS"
+                }
+              }
+            ]
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "PUOPS"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "PUOPS"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "FUS"
+                }
+              }
+            ]
           }
         },
         {

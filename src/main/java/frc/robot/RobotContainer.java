@@ -199,10 +199,6 @@ public class RobotContainer {
                 final var idle = new SwerveRequest.Idle();
                 RobotModeTriggers.disabled().whileTrue(
                                 drivetrain.applyRequest(() -> idle).ignoringDisable(true));
-                // driver.a().whileTrue(drivetrain.applyRequest(() -> brake));
-                // driver.b().whileTrue(drivetrain
-                // .applyRequest(() -> point.withModuleDirection(
-                // new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
                 driver.leftTrigger().whileTrue(
                                 new ShootCommand(m_shooter, m_hood, m_feederRoller, m_feederBelt,
@@ -214,7 +210,7 @@ public class RobotContainer {
                                                 m_intakeArm.intakeArmToIntakeAngleCommand(),
                                                 m_intake.runIntakeAtVelocityCommand(),
                                                 unstickFuelCommand()).withName("TeleopIntake"))
-                                .onFalse(m_intake.startIntakeCommand());
+                                .onFalse(m_intake.startIntakeCommandSlow());
 
                 driver.leftBumper().onTrue(
                                 Commands.sequence(
@@ -224,7 +220,7 @@ public class RobotContainer {
                                                 Commands.parallel(unstickFuelCommand(),
                                                                 new AlignTargetOdometry(drivetrain, m_shooter, m_hood,
                                                                                 drive,
-                                                                                driver, 1)));
+                                                                                driver, 1.75)));
 
                 driver.rightBumper().onTrue(
                                 Commands.parallel(
@@ -346,10 +342,6 @@ public class RobotContainer {
                  * 1 -
                  * 2-
                  * 3-
-                 * codriver.povLeft().onTrue(m_hood.positionToHomeCommand());
-                 * 
-                 * codriver.povRight().whileTrue(m_hood.positionTestCommand());
-                 * 
                  * 4 -
                  * 5- intake slide arm
                  * 6 - FRSteer
@@ -390,7 +382,7 @@ public class RobotContainer {
                                                                 drivetrain, m_shooter,
                                                                 m_hood, m_intake,
                                                                 m_feederRoller,
-                                                                m_feederBelt, 2),
+                                                                m_feederBelt, 1.75),
                                                 Commands.sequence(
                                                                 Commands.waitSeconds(4),
                                                                 m_intakeArm.helpShootCommand(
@@ -398,6 +390,10 @@ public class RobotContainer {
                                                                                 Degrees.of(2))))
                                                 .withTimeout(12)
                                                 .andThen(stopShootersFeedersIntake()));
+
+                NamedCommands.registerCommand("FUS",
+
+                                unstickFuelCommand());
 
         }
 
@@ -408,8 +404,8 @@ public class RobotContainer {
                                 Commands.sequence(
                                                 m_intakeArm.intakeArmToIntakeAngleCommand(),
                                                 m_intake.startIntakeCommand(),
-                                                Commands.waitSeconds(.5),
-                                                unstickFuelCommand()));
+                                                Commands.waitSeconds(.5)));
+                                               
 
         }
 
